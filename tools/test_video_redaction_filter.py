@@ -58,16 +58,27 @@ class VideoRedactionFilterTests(unittest.TestCase):
                 {"regions": [{"start": 0, "end": 1, "x": True, "y": 0, "width": 100, "height": 100}]}
             )
 
-    def test_blur_radius_must_fit_crop(self):
-        with self.assertRaisesRegex(PlanError, "at most half"):
+    def test_blur_radius_respects_common_yuv420p_chroma_limit(self):
+        valid = parse_plan(
+            {"regions": [{"start": 0, "end": 1, "x": 0, "y": 0, "width": 100, "height": 100, "blur": 25}]}
+        )
+        self.assertEqual(25, valid[0].blur)
+
+        with self.assertRaisesRegex(PlanError, "one quarter"):
             parse_plan(
-                {"regions": [{"start": 0, "end": 1, "x": 0, "y": 0, "width": 20, "height": 10, "blur": 6}]}
+                {"regions": [{"start": 0, "end": 1, "x": 0, "y": 0, "width": 100, "height": 100, "blur": 26}]}
             )
 
-    def test_tiny_crop_is_rejected(self):
-        with self.assertRaisesRegex(PlanError, "at least 2x2"):
+    def test_blur_limit_uses_smaller_crop_dimension(self):
+        with self.assertRaisesRegex(PlanError, "one quarter"):
             parse_plan(
-                {"regions": [{"start": 0, "end": 1, "x": 0, "y": 0, "width": 1, "height": 20, "blur": 1}]}
+                {"regions": [{"start": 0, "end": 1, "x": 0, "y": 0, "width": 200, "height": 40, "blur": 11}]}
+            )
+
+    def test_tiny_crop_is_rejected_for_conservative_chroma_validation(self):
+        with self.assertRaisesRegex(PlanError, "at least 4 pixels"):
+            parse_plan(
+                {"regions": [{"start": 0, "end": 1, "x": 0, "y": 0, "width": 3, "height": 20, "blur": 1}]}
             )
 
 
