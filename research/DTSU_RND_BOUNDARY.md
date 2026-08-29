@@ -120,7 +120,7 @@ The research should use a controlled fault-injection harness rather than product
 
 1. **No authority amplification or stale-authority execution:** every protected effect must be authorized by authority that is valid for the requested action at takeover and remains valid at the moment the effect is committed. Expired or revoked approval must force re-authorization or fail closed.
 2. **No blind duplicate effects:** ambiguous provider outcomes enter reconciliation rather than automatic replay.
-3. **Externally single effective mutation authority per protected resource:** under partition, stale-owner return, or concurrent takeover, conflicting workers must not both produce accepted protected mutations for the same ownership epoch / fencing scope. The invariant is judged from observable accepted effects, not from what either worker believes.
+3. **Monotonic fencing acceptance per protected resource:** once a protected provider or effect reconciler accepts a mutation carrying fencing epoch/token N for a resource, it must reject every later mutation carrying any lower epoch/token for that resource, including a stale owner returning after takeover. Under partition or concurrent takeover, safety is judged from observable accepted effects and fencing decisions, not from what either worker believes.
 4. **Auditable lineage:** each externally relevant action can be traced to one durable intent and its recovery history.
 5. **Bounded recovery:** the system either recovers within a defined budget or fails closed with an actionable checkpoint.
 
