@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 from dataclasses import asdict, dataclass
@@ -13,6 +14,7 @@ from pathlib import Path
 TIMING_RE = re.compile(
     r"^(?P<start>\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(?P<end>\d{2}:\d{2}:\d{2},\d{3})$"
 )
+INDEX_RE = re.compile(r"^[0-9]+$")
 HTML_TAG_RE = re.compile(r"<[^>]+>")
 ASS_TAG_RE = re.compile(r"\{\\[^}]+\}")
 
@@ -68,11 +70,11 @@ def parse_srt(source: str) -> tuple[list[Cue], list[Finding]]:
             findings.append(Finding("MALFORMED_BLOCK", "cue block needs an index and timing line", block_number))
             continue
 
-        try:
-            cue_number = int(lines[0].strip())
-        except ValueError:
-            findings.append(Finding("INVALID_INDEX", f"invalid cue index: {lines[0].strip()!r}", block_number))
+        raw_index = lines[0].strip()
+        if not INDEX_RE.fullmatch(raw_index):
+            findings.append(Finding("INVALID_INDEX", f"invalid cue index: {raw_index!r}", block_number))
             continue
+        cue_number = int(raw_index)
 
         timing = TIMING_RE.fullmatch(lines[1].strip())
         if not timing:
@@ -117,7 +119,7 @@ def inspect_cues(
         if previous is not None:
             if cue.start_ms < previous.start_ms:
                 findings.append(Finding("NON_MONOTONIC_START", f"cue starts before cue {previous.number}", cue.block, cue.number))
-            if cue.start_ms < previous.end_ms:
+            if cue.start_ms < previous.end_ms and previous.start_ms < cue.end_ms:
                 findings.append(Finding("OVERLAP", f"cue overlaps cue {previous.number}", cue.block, cue.number))
 
         duration_ms = cue.end_ms - cue.start_ms
@@ -170,12 +172,15 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def validate_positive_finite(value: float | None, option: str) -> None:
+    if value is not None and (not math.isfinite(value) or value <= 0):
+        raise SystemExit(f"{option} must be a finite number greater than zero")
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.max_cps is not None and args.max_cps <= 0:
-        raise SystemExit("--max-cps must be greater than zero")
-    if args.max_duration is not None and args.max_duration <= 0:
-        raise SystemExit("--max-duration must be greater than zero")
+    validate_positive_finite(args.max_cps, "--max-cps")
+    validate_positive_finite(args.max_duration, "--max-duration")
 
     try:
         source = args.path.read_text(encoding="utf-8-sig")
