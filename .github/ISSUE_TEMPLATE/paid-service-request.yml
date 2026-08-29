@@ -1,5 +1,5 @@
 name: Paid service request
-about: Request a non-confidential AgentLink review, audit, or PoC
+description: Request a non-confidential AgentLink review, audit, or PoC
 labels: []
 body:
   - type: markdown
