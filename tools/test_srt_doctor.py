@@ -1,6 +1,9 @@
+import math
+import tempfile
 import unittest
+from pathlib import Path
 
-from srt_doctor import inspect_srt, visible_character_count
+from srt_doctor import inspect_srt, main, visible_character_count
 
 
 VALID_SRT = """1
@@ -33,6 +36,20 @@ Second.
         self.assertIn("NON_MONOTONIC_START", codes)
         self.assertIn("OVERLAP", codes)
 
+    def test_reverse_order_disjoint_cues_are_not_called_overlap(self):
+        source = """1
+00:00:10,000 --> 00:00:11,000
+Later cue first.
+
+2
+00:00:08,000 --> 00:00:09,000
+Earlier cue second.
+"""
+        _, findings = inspect_srt(source)
+        codes = {finding.code for finding in findings}
+        self.assertIn("NON_MONOTONIC_START", codes)
+        self.assertNotIn("OVERLAP", codes)
+
     def test_duplicate_index_empty_text_and_bad_duration_are_reported(self):
         source = """1
 00:00:01,000 --> 00:00:02,000
@@ -47,6 +64,15 @@ Text.
         self.assertIn("EMPTY_TEXT", codes)
         self.assertIn("NON_POSITIVE_DURATION", codes)
 
+    def test_python_numeric_syntax_is_not_accepted_as_srt_index(self):
+        source = """1_0
+00:00:01,000 --> 00:00:02,000
+Text.
+"""
+        cues, findings = inspect_srt(source)
+        self.assertEqual([], cues)
+        self.assertEqual("INVALID_INDEX", findings[0].code)
+
     def test_optional_pacing_thresholds_are_not_enabled_by_default(self):
         source = """1
 00:00:00,000 --> 00:00:01,000
@@ -59,6 +85,16 @@ Text.
         codes = {finding.code for finding in limited_findings}
         self.assertIn("HIGH_CPS", codes)
         self.assertIn("LONG_DURATION", codes)
+
+    def test_cli_rejects_non_finite_pacing_thresholds(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.srt"
+            path.write_text(VALID_SRT, encoding="utf-8")
+            for option in ("--max-cps", "--max-duration"):
+                for value in ("nan", "inf", "-inf"):
+                    with self.subTest(option=option, value=value):
+                        with self.assertRaises(SystemExit):
+                            main([str(path), option, value])
 
     def test_invalid_timing_line_is_reported_without_crashing(self):
         source = """1
