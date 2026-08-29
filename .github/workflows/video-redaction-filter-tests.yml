@@ -1,0 +1,32 @@
+name: Video redaction filter tests
+
+on:
+  push:
+    paths:
+      - 'tools/video_redaction_filter.py'
+      - 'tools/test_video_redaction_filter.py'
+      - 'tools/examples/video-redaction-plan.json'
+      - '.github/workflows/video-redaction-filter-tests.yml'
+  pull_request:
+    paths:
+      - 'tools/video_redaction_filter.py'
+      - 'tools/test_video_redaction_filter.py'
+      - 'tools/examples/video-redaction-plan.json'
+      - '.github/workflows/video-redaction-filter-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run unit tests
+        working-directory: tools
+        run: python -m unittest -v test_video_redaction_filter.py
