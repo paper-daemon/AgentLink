@@ -116,7 +116,7 @@ These tools support media-delivery work without claiming automatic editorial or 
 
 Path: `tools/srt_doctor.py`
 
-A dependency-free structural QA tool for SubRip subtitle files. It checks malformed cue blocks and indexes, invalid timing, empty text, non-positive duration, duplicate indexes, non-monotonic starts, and actual interval overlap. Optional pacing thresholds can be enabled when a client specification requires them rather than treating one reading-speed rule as universal.
+A dependency-free structural QA tool for SubRip subtitle files. It checks malformed cue blocks and indexes, invalid timing, empty text, non-positive duration, duplicate indexes, non-monotonic starts, and overlap between adjacent parsed cues. Optional pacing thresholds can be enabled when a client specification requires them rather than treating one reading-speed rule as universal.
 
 The tool has been hardened through GitHub review and CI-backed regression tests, including edge cases for malformed Python-style numeric indexes, extremely large indexes, reverse-ordered but disjoint cues, and non-finite pacing thresholds.
 
