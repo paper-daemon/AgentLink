@@ -16,6 +16,36 @@ It checks issues such as:
 
 Run it with ordinary Python; no third-party package is required. The directory includes unit tests and its own README/quick start.
 
+## SRT Doctor
+
+`srt_doctor.py` performs conservative structural QA on SubRip (`.srt`) subtitle files without changing the file or calling any external service.
+
+By default it flags:
+
+- malformed cue blocks, indexes, and timing lines
+- empty subtitle text
+- non-positive cue durations
+- duplicate cue indexes
+- non-monotonic cue starts
+- overlapping adjacent cues
+
+Reading-speed and maximum-duration rules vary by client and language, so they are **not** treated as universal defaults. Enable them explicitly when a delivery specification requires them:
+
+```bash
+python tools/srt_doctor.py subtitles.srt
+python tools/srt_doctor.py subtitles.srt --max-cps 20 --max-duration 7
+python tools/srt_doctor.py subtitles.srt --json
+```
+
+Exit code `0` means no findings under the selected checks, `1` means QA findings were reported, and `2` means the input file could not be read. A clean result is a preflight signal, not a guarantee of linguistic, translation, timing, accessibility, or client acceptance quality.
+
+### Test SRT Doctor
+
+```bash
+cd tools
+python -m unittest -v test_srt_doctor.py
+```
+
 ## Retry Guard
 
 `retry_guard.py` classifies whether an interrupted automation should execute again.
