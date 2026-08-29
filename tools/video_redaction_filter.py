@@ -62,12 +62,23 @@ def parse_region(raw: object, index: int) -> Region:
     width = positive_int(raw.get("width"), f"region {index}.width")
     height = positive_int(raw.get("height"), f"region {index}.height")
     blur = positive_int(raw.get("blur", 10), f"region {index}.blur")
-    max_blur = min(width, height) // 2
+
+    # FFmpeg boxblur defaults chroma_radius to luma_radius. For common 4:2:0
+    # video, each chroma plane is half the crop width and height, so its
+    # radius limit is one quarter of the smaller luma-plane crop dimension.
+    # This helper does not probe the input pixel format, so use that common
+    # subsampled layout as a conservative acceptance bound instead of emitting
+    # plans that may validate here and fail later in FFmpeg.
+    max_blur = min(width, height) // 4
     if max_blur < 1:
-        raise PlanError(f"region {index} must be at least 2x2 pixels for blur redaction")
+        raise PlanError(
+            f"region {index} smaller crop dimension must be at least 4 pixels "
+            "for conservative 4:2:0 blur validation"
+        )
     if blur > max_blur:
         raise PlanError(
-            f"region {index}.blur must be at most half the smaller crop dimension ({max_blur})"
+            f"region {index}.blur must be at most one quarter of the smaller crop "
+            f"dimension for common 4:2:0 inputs ({max_blur})"
         )
 
     return Region(start=start, end=end, x=x, y=y, width=width, height=height, blur=blur)
