@@ -74,7 +74,11 @@ def parse_srt(source: str) -> tuple[list[Cue], list[Finding]]:
         if not INDEX_RE.fullmatch(raw_index):
             findings.append(Finding("INVALID_INDEX", f"invalid cue index: {raw_index!r}", block_number))
             continue
-        cue_number = int(raw_index)
+        try:
+            cue_number = int(raw_index)
+        except ValueError:
+            findings.append(Finding("INVALID_INDEX", f"cue index is too large to parse safely", block_number))
+            continue
 
         timing = TIMING_RE.fullmatch(lines[1].strip())
         if not timing:
