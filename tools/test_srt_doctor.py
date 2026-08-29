@@ -72,6 +72,12 @@ Text.
         self.assertEqual([], cues)
         self.assertEqual("INVALID_INDEX", findings[0].code)
 
+    def test_oversized_decimal_index_is_reported_not_raised(self):
+        source = f"{'9' * 5000}\n00:00:01,000 --> 00:00:02,000\nText.\n"
+        cues, findings = inspect_srt(source)
+        self.assertEqual([], cues)
+        self.assertEqual("INVALID_INDEX", findings[0].code)
+
     def test_optional_pacing_thresholds_are_not_enabled_by_default(self):
         source = """1
 00:00:00,000 --> 00:00:01,000
