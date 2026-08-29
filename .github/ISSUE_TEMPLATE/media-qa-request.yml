@@ -1,5 +1,5 @@
 name: Media QA / subtitle request
-about: Request non-confidential subtitle, transcript, or short-form privacy-redaction help
+description: Request non-confidential subtitle, transcript, or short-form privacy-redaction help
 labels: []
 body:
   - type: markdown
