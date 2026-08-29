@@ -1,0 +1,54 @@
+name: Media QA / subtitle request
+about: Request non-confidential subtitle, transcript, or short-form privacy-redaction help
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your interest. This is a public issue. Do **not** upload or paste video/audio files, screenshots containing personal data, private download links, credentials, contracts, customer material, or other confidential information here. Use this form only to confirm scope at a high level.
+  - type: dropdown
+    id: service
+    attributes:
+      label: Service
+      options:
+        - Subtitle / transcript QA (reference from ¥1,500)
+        - Static short-video blur / mosaic assistance (reference from ¥2,500)
+        - Small media preflight bundle (reference from ¥3,800)
+        - Other media QA / production assistance
+    validations:
+      required: true
+  - type: input
+    id: media
+    attributes:
+      label: Media type and approximate duration
+      description: Example: one 90-second MP4 + one SRT. Do not attach the actual media here.
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      description: Subtitle / transcript language, if applicable.
+  - type: textarea
+    id: output
+    attributes:
+      label: Desired output and QA rules
+      description: Describe the expected delivery format and any client-specific rules at a non-confidential level.
+    validations:
+      required: true
+  - type: textarea
+    id: redaction
+    attributes:
+      label: Redaction scope, if any
+      description: Describe the target generically, such as "fixed account-number area from 00:12 to 00:18". Do not post personal data, private screenshots, or sensitive identifiers.
+  - type: input
+    id: deadline
+    attributes:
+      label: Deadline or urgency
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Public issue safety check
+      options:
+        - label: I confirm this issue contains no private media, personal data, credentials, contracts, customer material, private links, or other confidential information.
+          required: true
