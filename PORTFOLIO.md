@@ -6,7 +6,7 @@ The production AgentLink core remains private. Public examples are deliberately 
 
 ## Available for contract work
 
-Currently available for narrowly scoped **AI automation / Python API / RAG / AI-agent reliability / local image-generation workflow** contract work, including small paid trials and proof-of-concept tasks.
+Currently available for narrowly scoped **AI automation / Python API / RAG / AI-agent reliability / local image-generation workflow / subtitle QA / bounded video privacy processing** contract work, including small paid trials and proof-of-concept tasks.
 
 Good first engagements include:
 
@@ -14,9 +14,11 @@ Good first engagements include:
 - RAG / AI-agent workflow validation
 - idempotency, retry, recovery, receipt, and worker-ownership reviews
 - ComfyUI / ComfyStudio workflow validation and controlled image-generation experiments
+- subtitle / transcript structural QA and delivery preflight
+- reviewable static-region video blur / mosaic preparation
 - reproducible technical experiments, validators, and testable helper tools
 
-For Japanese teams: **AI自動化・Python/API連携・RAG・AIエージェントの小規模PoC／技術検証、ComfyUI系の画像生成ワークフロー検証を、業務委託・小さな有償トライアルから対応可能です。** 未確認の商用実績や顧客成果は誇張せず、公開デモとテストで確認できる範囲を起点に進めます。
+For Japanese teams: **AI自動化・Python/API連携・RAG・AIエージェントの小規模PoC／技術検証、ComfyUI系の画像生成ワークフロー検証、字幕・文字起こしQA、指定領域の動画ぼかし補助などを、業務委託・小さな有償トライアルから対応可能です。** 未確認の商用実績や顧客成果は誇張せず、公開デモとテストで確認できる範囲を起点に進めます。
 
 Fixed-price starting points and larger PoC scopes are listed below. For non-confidential inquiries, use the repository's [Paid Service Request](../../issues/new?template=paid-service-request.yml) or [Project Inquiry](../../issues/new?template=project-inquiry.yml) form.
 
@@ -105,6 +107,34 @@ Verified local scope includes:
 - explicit separation of identity/reference, pose/composition, prompt, and seed controls
 
 The broader 18-model by 6-test image benchmark is still incomplete and is not claimed as finished.
+
+## Media QA and privacy tooling
+
+These tools support media-delivery work without claiming automatic editorial or privacy correctness. Human review remains part of the delivery boundary.
+
+### SRT Doctor
+
+Path: `tools/srt_doctor.py`
+
+A dependency-free structural QA tool for SubRip subtitle files. It checks malformed cue blocks and indexes, invalid timing, empty text, non-positive duration, duplicate indexes, non-monotonic starts, and actual interval overlap. Optional pacing thresholds can be enabled when a client specification requires them rather than treating one reading-speed rule as universal.
+
+The tool has been hardened through GitHub review and CI-backed regression tests, including edge cases for malformed Python-style numeric indexes, extremely large indexes, reverse-ordered but disjoint cues, and non-finite pacing thresholds.
+
+### Video Redaction Filter Planner
+
+Path: `tools/video_redaction_filter.py`
+
+A conservative helper for static rectangular video privacy work. It validates a JSON plan containing time ranges and pixel rectangles, then emits a shell-quoted FFmpeg command for review before execution.
+
+Verified boundaries:
+
+- validates time ranges, coordinates, crop dimensions, and blur radius
+- rejects non-finite or structurally invalid inputs
+- supports multiple time-bounded blur regions in one filter graph
+- 8 focused unit tests and GitHub Actions coverage
+- does **not** perform face/person detection, tracking, automatic censoring decisions, network upload, or frame-by-frame correctness guarantees
+
+Service scopes that use these public tools are documented in [`MEDIA_QA_SERVICES.md`](./MEDIA_QA_SERVICES.md).
 
 ## Public reliability tools
 
@@ -202,7 +232,7 @@ Reference scopes currently include:
 - Multi-step AI Agent / RAG PoC — from ¥98,000
 - Enterprise design-partner PoCs — scoped separately
 
-See `SERVICES.md` and `POC.md`.
+See `SERVICES.md`, `MEDIA_QA_SERVICES.md`, and `POC.md`.
 
 ## Contact / intake
 
