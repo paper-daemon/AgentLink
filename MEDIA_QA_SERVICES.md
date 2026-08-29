@@ -62,14 +62,13 @@ This is a preflight / production-assistance service, not a guarantee that a plat
 
 ## Inquiry
 
-For now, open a GitHub Issue in this repository with a **non-confidential** description of:
+Use the [Media QA / subtitle request form](https://github.com/paper-daemon/AgentLink/issues/new?template=media-qa-request.yml) to share a **non-confidential** scope description. The form asks for:
 
 1. media type and approximate duration
-2. desired output format
+2. desired output format and QA rules
 3. subtitle / transcript language
-4. redaction targets, if any
-5. deadline
-6. any client-specific QA rules
+4. redaction scope, if any
+5. deadline or urgency
 
 Do not post private footage, personal data, passwords, API keys, contracts, private download links, or confidential client material in a public issue. Use the issue only to discuss scope; private transfer details can be agreed after scope is confirmed.
 
@@ -94,3 +93,5 @@ Do not post private footage, personal data, passwords, API keys, contracts, priv
 - 小規模メディア納品前チェック: **¥3,800〜**
 
 公開済みのSRT DoctorとVideo Redaction Filter Plannerを技術証拠として利用します。自動判定だけで納品品質を保証せず、案件ごとの指定と人間の最終確認を前提にします。
+
+相談時は [Media QA / subtitle request form](https://github.com/paper-daemon/AgentLink/issues/new?template=media-qa-request.yml) から、機密情報を含まない範囲で案件概要だけ送れます。実素材、個人情報、顧客データ、非公開URLなどは公開Issueへ貼らないでください。
