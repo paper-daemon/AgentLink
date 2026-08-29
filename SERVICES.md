@@ -4,6 +4,10 @@ AgentLink offers selected AI automation, architecture, reliability review, and p
 
 This page is intentionally conservative: it describes work we can actually scope, prototype, test, review, and hand off. It does not claim customer outcomes that have not happened.
 
+## Media production / QA lane
+
+For subtitle / transcript QA, short-form media preflight, and bounded static video privacy-blur assistance, see [Media QA / Subtitle / Privacy-Redaction Services](./MEDIA_QA_SERVICES.md). This is a separate service lane backed by the public SRT Doctor and Video Redaction Filter Planner rather than by unverified customer claims.
+
 ## 1. AI Automation Quickstart Kit
 
 **Fixed price: ¥980**
@@ -158,6 +162,8 @@ For a larger PoC, open a GitHub Issue in this repository with a **non-confidenti
 4. deadline or urgency
 5. security / deployment constraints
 
+For subtitle, transcript, or bounded short-form video QA work, use the separate [Media QA service page](./MEDIA_QA_SERVICES.md) for scope guidance.
+
 Do not post passwords, API keys, personal data, proprietary datasets, private URLs, contracts, or other confidential information in a public issue.
 
 ---
@@ -165,6 +171,8 @@ Do not post passwords, API keys, personal data, proprietary datasets, private UR
 ## 日本語
 
 AgentLinkでは、実際に検証済みの技術資産をベースに、AI業務自動化、Python/API連携、RAG・AI AgentのPoC、設計レビュー、AIエージェントの信頼性・復旧設計レビューを提供します。
+
+字幕・文字起こし・短尺動画のプライバシー処理については、別レーンの [Media QA / Subtitle / Privacy-Redaction Services](./MEDIA_QA_SERVICES.md) を参照してください。
 
 現在オンライン決済できる固定価格メニュー:
 
