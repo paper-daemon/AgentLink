@@ -57,15 +57,20 @@ def parse_region(raw: object, index: int) -> Region:
     if end <= start:
         raise PlanError(f"region {index}.end must be later than start")
 
-    return Region(
-        start=start,
-        end=end,
-        x=positive_int(raw.get("x"), f"region {index}.x", allow_zero=True),
-        y=positive_int(raw.get("y"), f"region {index}.y", allow_zero=True),
-        width=positive_int(raw.get("width"), f"region {index}.width"),
-        height=positive_int(raw.get("height"), f"region {index}.height"),
-        blur=positive_int(raw.get("blur", 10), f"region {index}.blur"),
-    )
+    x = positive_int(raw.get("x"), f"region {index}.x", allow_zero=True)
+    y = positive_int(raw.get("y"), f"region {index}.y", allow_zero=True)
+    width = positive_int(raw.get("width"), f"region {index}.width")
+    height = positive_int(raw.get("height"), f"region {index}.height")
+    blur = positive_int(raw.get("blur", 10), f"region {index}.blur")
+    max_blur = min(width, height) // 2
+    if max_blur < 1:
+        raise PlanError(f"region {index} must be at least 2x2 pixels for blur redaction")
+    if blur > max_blur:
+        raise PlanError(
+            f"region {index}.blur must be at most half the smaller crop dimension ({max_blur})"
+        )
+
+    return Region(start=start, end=end, x=x, y=y, width=width, height=height, blur=blur)
 
 
 def parse_plan(raw: object) -> list[Region]:
