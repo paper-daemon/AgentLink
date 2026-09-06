@@ -50,7 +50,7 @@ The public test suite verifies seven branches:
 4. a clear new attempt may execute
 5. a positive authentication gate stops without credential guessing
 6. a cooldown defers the side effect
-7. a recorded completed effect is never replayed just because the current boundary is clear
+7. a recorded completed effect is never replayed, regardless of the current boundary
 
 ## What this demonstrates
 
