@@ -67,6 +67,12 @@ The real-world problem is significantly harder. Production systems must consider
 
 This toy demo exists only to make the core reliability ideas inspectable without publishing AgentLink's private production implementation.
 
+## Contributing
+
+External testing, bug reports, documentation improvements, and narrowly scoped code contributions are welcome for this MIT-licensed demo.
+
+Start with [CONTRIBUTING.md](./CONTRIBUTING.md). If you find a reproducibility or reliability issue, please include the smallest safe reproduction and never post credentials, private endpoints, or customer data.
+
 ## License
 
 The code in this demo directory is released under the MIT License in `LICENSE`.
