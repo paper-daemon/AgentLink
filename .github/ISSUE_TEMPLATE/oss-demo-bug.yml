@@ -1,0 +1,55 @@
+name: OSS demo bug / reproducibility report
+description: Report a reproducible problem in an MIT-licensed public AgentLink demo
+title: "[OSS demo] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing an AgentLink public demo. Please share only non-confidential information. Do not include credentials, private URLs, customer data, or production logs.
+  - type: dropdown
+    id: demo
+    attributes:
+      label: Public demo
+      options:
+        - Receipt Replay Simulator
+        - Other public demo
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Python version, operating system, and any relevant runtime details.
+      placeholder: "Python 3.12, Fedora 43"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Exact safe steps or commands that reproduce the issue.
+      placeholder: |
+        1. cd demos/receipt-replay-simulator
+        2. python3 -m unittest -v
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-data check
+      options:
+        - label: I removed credentials, private endpoints, customer data, and other confidential information.
+          required: true
