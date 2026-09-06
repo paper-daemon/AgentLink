@@ -42,7 +42,7 @@ Expected output shows both recovery decisions and new-attempt decisions.
 python3 -m unittest -v
 ```
 
-The public test suite verifies seven branches:
+The public test suite verifies nine branches:
 
 1. `completed` skips an already-completed action
 2. `not_started` permits a retry

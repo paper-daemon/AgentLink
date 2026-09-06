@@ -58,6 +58,28 @@ class AttemptDecisionTests(unittest.TestCase):
             AttemptDecision.SKIP_ALREADY_COMPLETED,
         )
 
+    def test_completed_effect_wins_over_positive_auth_gate(self):
+        attempt = ActionAttempt(
+            "publish-social",
+            boundary=AttemptBoundary.POSITIVE_AUTH_GATE,
+            effect_already_recorded=True,
+        )
+        self.assertEqual(
+            decide_attempt(attempt),
+            AttemptDecision.SKIP_ALREADY_COMPLETED,
+        )
+
+    def test_completed_effect_wins_over_cooldown(self):
+        attempt = ActionAttempt(
+            "publish-again",
+            boundary=AttemptBoundary.COOLDOWN,
+            effect_already_recorded=True,
+        )
+        self.assertEqual(
+            decide_attempt(attempt),
+            AttemptDecision.SKIP_ALREADY_COMPLETED,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
