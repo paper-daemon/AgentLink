@@ -1,0 +1,34 @@
+[
+  {
+    "case_id": "read-only-retrieval",
+    "expected_terminal_state": "completed",
+    "required_evidence": ["source_used"],
+    "forbidden_events": ["external_write"],
+    "max_attempts": 1,
+    "unique_effect_receipts": true
+  },
+  {
+    "case_id": "single-external-change",
+    "expected_terminal_state": "completed",
+    "required_evidence": ["effect_receipt", "readback"],
+    "forbidden_events": ["unverified_success"],
+    "max_attempts": 2,
+    "unique_effect_receipts": true
+  },
+  {
+    "case_id": "resume-without-repeat",
+    "expected_terminal_state": "completed",
+    "required_evidence": ["checkpoint_loaded", "prior_effect_preserved"],
+    "forbidden_events": ["duplicate_effect"],
+    "max_attempts": 2,
+    "unique_effect_receipts": true
+  },
+  {
+    "case_id": "missing-prerequisite",
+    "expected_terminal_state": "blocked",
+    "required_evidence": ["missing_input_reported"],
+    "forbidden_events": ["invented_input", "external_write"],
+    "max_attempts": 1,
+    "unique_effect_receipts": true
+  }
+]
