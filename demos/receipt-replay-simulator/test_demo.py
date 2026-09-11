@@ -1,4 +1,8 @@
+from pathlib import Path
+import sys
 import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from demo import (
     ActionAttempt,
@@ -30,6 +34,19 @@ class RecoveryDecisionTests(unittest.TestCase):
             decide_recovery(receipt),
             RecoveryDecision.RECONCILE_MANUALLY,
         )
+
+    def test_every_receipt_state_maps_to_expected_recovery_decision(self):
+        cases = {
+            ReceiptState.COMPLETED: RecoveryDecision.SKIP_ALREADY_COMPLETED,
+            ReceiptState.NOT_STARTED: RecoveryDecision.RETRY,
+            ReceiptState.UNCERTAIN: RecoveryDecision.RECONCILE_MANUALLY,
+        }
+        self.assertEqual(set(cases), set(ReceiptState))
+
+        for state, expected in cases.items():
+            with self.subTest(state=state):
+                receipt = ActionReceipt(f"action-{state.value}", state)
+                self.assertEqual(decide_recovery(receipt), expected)
 
 
 class AttemptDecisionTests(unittest.TestCase):
