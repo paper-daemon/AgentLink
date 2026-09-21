@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "gene_choice_deck": {
+      "type": "streamable-http",
+      "url": "https://gene-choice-deck.floot.app/_api/mcp"
+    }
+  }
+}
