@@ -2,7 +2,7 @@
 
 Three model-authored choice cards for ChatGPT.
 
-- Hosted MCP endpoint: `https://gene-choice-deck.floot.app/_api/mcp`\n- Standalone Node server endpoint: `/mcp`
+- Hosted MCP endpoint: `https://gene-choice-deck.floot.app/_api/mcp`\n- MCP endpoint: `/mcp`
 - Health endpoint: `/health`
 - Tool: `show_choice_deck`
 - Each card may contain a model-authored title, description, badge, and follow-up prompt.
