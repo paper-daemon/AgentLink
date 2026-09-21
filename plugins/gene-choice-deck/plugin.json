@@ -1,0 +1,8 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "gene-choice-deck",
+  "version": "0.1.0",
+  "description": "Three model-authored choice cards that turn a tap into the next ChatGPT turn.",
+  "repository": "https://github.com/paper-daemon/AgentLink",
+  "keywords": ["choices", "workflow", "checkpoint", "mcp", "ui"]
+}
