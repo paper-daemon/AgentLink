@@ -9,6 +9,7 @@ from demo import (
     RecoveryDecision,
     decide_attempt,
     decide_recovery,
+    simulate_interrupted_effect,
 )
 
 
@@ -63,6 +64,18 @@ class AttemptDecisionTests(unittest.TestCase):
                     decide_attempt(attempt),
                     AttemptDecision.SKIP_ALREADY_COMPLETED,
                 )
+
+
+class InterruptedEffectRecoveryTests(unittest.TestCase):
+    def test_interrupted_at_ambiguous_boundary_requires_reconciliation(self):
+        receipt, decision = simulate_interrupted_effect("payment-webhook", interrupted_at_boundary=True)
+        self.assertEqual(receipt.state, ReceiptState.UNCERTAIN)
+        self.assertEqual(decision, RecoveryDecision.RECONCILE_MANUALLY)
+
+    def test_interrupted_before_dispatch_permits_retry(self):
+        receipt, decision = simulate_interrupted_effect("payment-webhook", interrupted_at_boundary=False)
+        self.assertEqual(receipt.state, ReceiptState.NOT_STARTED)
+        self.assertEqual(decision, RecoveryDecision.RETRY)
 
 
 if __name__ == "__main__":

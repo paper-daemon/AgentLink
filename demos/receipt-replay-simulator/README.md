@@ -28,13 +28,17 @@ The attempt guard models three observable boundaries:
 
 A previously recorded completed effect wins over all of them and is skipped.
 
+### Interrupted external effects
+
+An interruption or timeout at an external-effect boundary is **not automatically equivalent to a confirmed failure**. When an external call is interrupted after dispatch, the remote system may have executed the action or be in the middle of executing it. The simulator marks this receipt state as `uncertain`, and recovery requires manual reconciliation rather than retrying. Only when the action was interrupted before crossing the external boundary—proving it is `not_started`—is an automatic retry permitted.
+
 ## Run
 
 ```bash
 python3 demo.py
 ```
 
-Expected output shows both recovery decisions and new-attempt decisions.
+Expected output shows recovery decisions, new-attempt decisions, and the interrupted effect scenario.
 
 ## Test
 
@@ -42,7 +46,7 @@ Expected output shows both recovery decisions and new-attempt decisions.
 python3 -m unittest -v
 ```
 
-The public test suite verifies seven branches:
+The public test suite verifies nine branches:
 
 1. `completed` skips an already-completed action
 2. `not_started` permits a retry
@@ -51,6 +55,8 @@ The public test suite verifies seven branches:
 5. a positive authentication gate stops without credential guessing
 6. a cooldown defers the side effect
 7. a recorded completed effect is never replayed, regardless of the current boundary
+8. an action interrupted across an ambiguous boundary yields an uncertain receipt requiring reconciliation
+9. an action interrupted before boundary dispatch remains not-started and permits a retry
 
 ## What this demonstrates
 
