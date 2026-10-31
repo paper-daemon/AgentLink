@@ -90,8 +90,6 @@ AgentLink には、完了・未開始・不明の3状態から再実行判断を
 
 ## すぐ使えるチェックリスト
 
-実運用向けに pre-flight、権限境界、incident recovery、idempotency log テンプレートをまとめた小さなパッケージも用意しています。
-
-- [AI自動化 事故防止チェックリスト — ¥500](../products/AL-CHK-001.md)
+実運用向けの pre-flight、権限境界、incident recovery、idempotency log の考え方は、本ガイドと [idempotency-receipt-ledger](https://github.com/paper-daemon/idempotency-receipt-ledger) にまとめています（旧チェックリスト商品は提供終了）。
 
 チェックリストは事故を完全に防ぐ保証ではありません。実際のシステムでは、利用するAPIや業務リスクに合わせて権限・監査・復旧設計を調整してください。

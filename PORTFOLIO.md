@@ -198,37 +198,37 @@ The incident recovery runbook follows a conservative sequence: freeze affected w
 
 ## Paid products and services
 
-### AI自動化 事故防止チェックリスト v2 — ¥500
+### AI自動化 事故防止チェックリスト v2（提供終了）
 
 Compact safety pack for duplicate execution, human approval boundaries, recovery and effect/idempotency logging.
 
-Details: [products/AL-CHK-001.md](./products/AL-CHK-001.md)
+Status: retired download. Current catalog: [DIGITAL_PRODUCTS.md](./DIGITAL_PRODUCTS.md) / [SERVICES.md](./SERVICES.md).
 
-### AI業務自動化 ヒアリング＆設計シート v2 — ¥980
+### AI業務自動化 ヒアリング＆設計シート v2（提供終了）
 
 Canonical workflow-design pack for discovery, human gates, retry/receipt planning and KPI baseline design.
 
-Details: [products/AL-TPL-002.md](./products/AL-TPL-002.md)
+Status: retired download. Current catalog: [DIGITAL_PRODUCTS.md](./DIGITAL_PRODUCTS.md) / [SERVICES.md](./SERVICES.md).
 
-### AI Agent Handoff & Recovery Kit v2 — ¥1,980
+### AI Agent Handoff & Recovery Kit v2（提供終了）
 
 State-first continuity templates for checkpointing, worker leases, unknown-outcome reconciliation and cross-thread recovery.
 
-Details: [products/AI_AGENT_HANDOFF_RECOVERY_KIT.md](./products/AI_AGENT_HANDOFF_RECOVERY_KIT.md)
+Status: retired download. Current catalog: [DIGITAL_PRODUCTS.md](./DIGITAL_PRODUCTS.md) / [SERVICES.md](./SERVICES.md).
 
-### AI Automation Opportunity Scan — ¥2,980
+### AI Automation Opportunity Scan
 
 Asynchronous review of one workflow or automation idea with candidate automations, difficulty, risks, and next actions.
 
-### AI Agent / RAG Architecture Quick Audit — ¥9,800
+### AI Agent / RAG Architecture Quick Audit
 
 Architecture review, risk checklist, quality/operability gaps, prioritized next steps, and an implementation plan.
 
-### Agent Reliability & Recovery Review — ¥14,800
+### Agent Reliability & Recovery Review
 
 Review focused on duplicate execution, idempotency, retries, failure recovery, worker leases, stale-owner recovery, receipts, and auditability.
 
-### AI Automation Small PoC Starter — ¥29,800
+### AI Automation Small PoC Starter
 
 One narrow, non-production workflow PoC with requirements, boundary definition, a small executable prototype, basic validation, and handoff notes.
 
@@ -238,8 +238,8 @@ Current checkout links and exact scopes are kept in [`DIGITAL_PRODUCTS.md`](./DI
 
 Reference scopes currently include:
 
-- Working Python / API / RAG PoC — from ¥59,800
-- Multi-step AI Agent / RAG PoC — from ¥98,000
+- Working Python / API / RAG PoC
+- Multi-step AI Agent / RAG PoC
 - Enterprise design-partner PoCs — scoped separately
 
 See `SERVICES.md`, `MEDIA_QA_SERVICES.md`, and `POC.md`.

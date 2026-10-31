@@ -11,9 +11,9 @@ body:
     attributes:
       label: Service
       options:
-        - Subtitle / transcript QA (reference from ¥1,500)
-        - Static short-video blur / mosaic assistance (reference from ¥2,500)
-        - Small media preflight bundle (reference from ¥3,800)
+        - Subtitle / transcript QA
+        - Static short-video blur / mosaic assistance
+        - Small media preflight bundle
         - Other media QA / production assistance
     validations:
       required: true
