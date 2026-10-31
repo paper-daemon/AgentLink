@@ -88,6 +88,36 @@ A provider-neutral incident flow for freezing affected writes, classifying side 
 
 - [Read: AI Agent Incident Recovery Runbook](./ai-agent-incident-recovery-runbook.md)
 
+### Unknown-Outcome Absence Proof
+
+結果不明の副作用を「推測」で終わらせず、相手側の確定応答と複数の裏取りで不存在を証明する型。再送の禁止と、証明できないものの扱いまで。
+
+- [Read: Unknown-Outcome Absence Proof](./unknown-outcome-absence-proof.md)
+
+### Forecast Evidence Stamps
+
+判断した瞬間に予測と根拠をレシートへ刻み、後から判断の良し悪しを採点できるようにする型。見送った候補の記録も含む。
+
+- [Read: Forecast Evidence Stamps](./forecast-evidence-stamps.md)
+
+### Bounded Sync Protocol Notes
+
+同期の考え方だけを抜き出したノート。初回は上限つき全件と申告、定常状態は差分と水位、保持期間を切れたら全件からやり直す。
+
+- [Read: Bounded Sync Protocol Notes](./bounded-sync-protocol-notes.md)
+
+### Plan-Unit Batch Execution
+
+大きな作業を成功条件つきの段に分け、承認の範囲ごとに束ね、各段にレシートを残して再開可能にする実行の型。
+
+- [Read: Plan-Unit Batch Execution](./plan-unit-batch-execution.md)
+
+### Watchdog Grace & Resource Protection
+
+起動の遅いプロセスを監視が誤って殺さないための猶予設計と、常駐サービスへのリソース優先の考え方。
+
+- [Read: Watchdog Grace & Resource Protection](./watchdog-grace-resource-protection.md)
+
 ## Public tools
 
 - [Retry Guard](../tools/retry_guard.py) — conservative retry/reconcile classification
