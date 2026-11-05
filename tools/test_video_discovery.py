@@ -23,7 +23,7 @@ class VideoDiscoveryContractTests(unittest.TestCase):
                 self.assertIn(GALLERY + "#" + slug, body)
                 self.assertIn(BASE + "videos/" + slug + ".mp4", body)
                 self.assertIn(BASE + "videos/" + slug + ".jpg", body)
-                self.assertIn("not a production", body.lower() if "not a production" in body.lower() else "not a production")
+                self.assertTrue("not a production" in body.lower() or "does not depict the private production" in body.lower())
 
     def test_flagship_and_top_level_entrypoints(self):
         flagship = (ROOT / "demos/chat-long-turn-continuity/README.md").read_text(encoding="utf-8")
