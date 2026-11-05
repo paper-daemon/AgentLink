@@ -1,0 +1,62 @@
+"""Repository policy checks for unprivileged GitHub Actions workflows.
+
+A focused regression guard, not a substitute for CodeQL or supply-chain review.
+"""
+from pathlib import Path
+import re
+import unittest
+
+ROOT = Path(__file__).resolve().parents[1]
+WORKFLOWS = ROOT / ".github" / "workflows"
+SHA_ACTION = re.compile(r"(?m)^[ \t]*(?:-\s*)?uses:\s*([^\s#]+)")
+CHECKOUT = re.compile(
+    r"uses: actions/checkout@[0-9a-f]{40}\n"
+    r"[ \t]+with:\n"
+    r"[ \t]+persist-credentials: false\b"
+)
+
+
+class WorkflowSecurityTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.workflows = sorted(WORKFLOWS.glob("*.yml")) + sorted(WORKFLOWS.glob("*.yaml"))
+
+    def test_workflows_exist_and_use_read_only_tokens(self):
+        self.assertGreater(len(self.workflows), 0)
+        for path in self.workflows:
+            with self.subTest(workflow=path.name):
+                text = path.read_text(encoding="utf-8")
+                self.assertRegex(text, r"(?m)^permissions:\n  contents: read(?:\n|$)")
+                self.assertNotRegex(text, r"(?m)^[ \t]+[a-z-]+: (?:write|write-all)\s*$")
+                self.assertNotRegex(text, r"(?m)^[ \t]*permissions:\s*write-all")
+
+    def test_all_remote_actions_are_pinned_and_checkout_is_not_persistent(self):
+        for path in self.workflows:
+            with self.subTest(workflow=path.name):
+                text = path.read_text(encoding="utf-8")
+                actions = SHA_ACTION.findall(text)
+                for action in actions:
+                    if action.startswith("./"):
+                        continue
+                    self.assertRegex(action, r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$")
+                checkouts = sum(a.startswith("actions/checkout@") for a in actions)
+                self.assertEqual(
+                    len(CHECKOUT.findall(text)), checkouts,
+                    "checkout must have persist-credentials: false",
+                )
+
+    def test_no_privileged_pr_trigger(self):
+        for path in self.workflows:
+            with self.subTest(workflow=path.name):
+                text = path.read_text(encoding="utf-8")
+                self.assertNotRegex(text, r"(?m)^[ \t]*(pull_request_target|workflow_run):")
+
+    def test_oss_engine_has_security_tests_in_ci(self):
+        workflow = (WORKFLOWS / "chat-long-turn-continuity.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("test_security_hardening.py", workflow)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -64,6 +64,16 @@ python3 examples/hello_engine.py
 
 Read the [public engine guide](./PUBLIC_ENGINE.md) for the API and explicit limitations. Its SQLite storage is separate from the earlier JSON simulator and **does not** guarantee exactly-once delivery of real external actions.
 
+## Security review
+
+The public engine now includes [security guidance and a threat model](./SECURITY_REVIEW.md), owner-only POSIX SQLite file creation, explicit rejection of unsafe existing DB paths, bounded identifiers and an adversarial test suite. This does **not** make the public demo or private AgentLink production runtime security certified.
+
+Run the security suite with:
+
+```bash
+python3 -m unittest -v test_public_engine.py test_security_hardening.py
+```
+
 ## Read-only checkpoint inspector
 
 After a turn is interrupted, inspect the saved JSON without changing it:

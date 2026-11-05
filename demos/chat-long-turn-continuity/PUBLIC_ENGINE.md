@@ -49,6 +49,14 @@ The `Lease` embeds the worker and an increasing epoch. An expired or superseded 
 
 `next_action()` returns `run_local`, `execute_once`, `reconcile`, or `completed`. It never performs a network request or arbitrary external side effect. `snapshot()` is read-only and returns local evidence with an event trail. The API intentionally has no background agent and no automatic looping across turns.
 
+## Local storage and trust boundary
+
+On POSIX, new SQLite files are created owner-only (mode 0600); a group/world-readable existing DB, symlink, or file owned by a different user is rejected. Create the containing directory under a trusted account and keep it private (mode 0700). If upgrading an existing trusted DB, check its ownership and use chmod 600 explicitly. Windows requires suitable filesystem ACLs supplied by the caller.
+
+This example has **no worker authentication**: anyone who can write the DB can forge a worker label or receipt. Never expose this library as an unauthenticated multi-tenant service. IDs, names and receipt keys are bounded to 256 printable characters, evidence references to 512, and jobs to 1,024 steps. Do not store tokens, passwords or customer data as evidence references.
+
+Read the [security review](./SECURITY_REVIEW.md) for threats, verified mitigations, remaining limitations and the migration checklist.
+
 ## Critical crash window and safety contract
 
 A **reservation is written before** the caller attempts an external effect. After an interruption, that step is `uncertain`, and a later call returns `reconcile`. This covers both possible crash windows: the request might not have been sent, or it might have succeeded remotely before local confirmation.
