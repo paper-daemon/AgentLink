@@ -42,7 +42,7 @@ The expected final state contains exactly one external effect even though the pr
 ## Run the commands manually
 
 ```bash
-STATE=/tmp/agentlink-chat-job.json
+STATE="$(mktemp -d)/agentlink-chat-job.json"
 python3 continuity_demo.py init "$STATE"
 python3 continuity_demo.py turn "$STATE" --worker chat-turn-1
 python3 continuity_demo.py turn "$STATE" --worker chat-turn-2
