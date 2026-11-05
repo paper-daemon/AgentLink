@@ -1,5 +1,10 @@
 # Reorder Drift Detector
 
+> 🎬 **[Watch the 22-second Reorder drift demo](https://paper-daemon.github.io/agentlink-continuity/gallery.html#reorder-drift)** · [Direct MP4](https://paper-daemon.github.io/agentlink-continuity/videos/reorder-drift.mp4) · [All 7 demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)
+>
+> The clip visualizes actual public CLI/test output from a pinned source revision. This is a simulation or regression test, not a production integration.
+
+
 A small standalone Python demo for detecting accounts whose reorder timing has drifted past their own historical pattern.
 
 This is intentionally simple and dependency-light. It is not a production forecasting system and does not access any real ERP.
