@@ -2,7 +2,7 @@
 
 ![AgentLink hero](./assets/agentlink-hero.svg)
 
-**🎬 [WATCH: All 7 runnable public demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)** · [34-sec real continuity screen capture](https://paper-daemon.github.io/agentlink-continuity/watch.html)
+**🎬 [WATCH: All 7 runnable public demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)** · **[12 developer tool and example films](https://paper-daemon.github.io/agentlink-continuity/tools.html)** · [34-sec real continuity screen capture](https://paper-daemon.github.io/agentlink-continuity/watch.html)
 
 See the working examples before reading the code. Six clips visualize captured public CLI/test output; the flagship film is a recorded interruption-and-recovery demonstration. None of them demonstrate the private production runtime.
 
