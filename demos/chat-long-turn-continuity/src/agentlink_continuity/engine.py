@@ -9,9 +9,28 @@ from __future__ import annotations
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+import math
+import os
 import sqlite3
+import stat
 import time
 from typing import Callable, Iterator, Sequence
+
+MAX_TEXT_LENGTH = 256
+MAX_EVIDENCE_LENGTH = 512
+MAX_JOB_STEPS = 1024
+
+
+def _bounded_text(value: str, field: str, *, limit: int = MAX_TEXT_LENGTH) -> None:
+    """Reject unbounded, invisible, or log-injecting identifier/evidence text."""
+    if (
+        not isinstance(value, str)
+        or not value
+        or value != value.strip()
+        or len(value) > limit
+        or any(ord(char) < 32 or ord(char) == 127 for char in value)
+    ):
+        raise ValueError(f"{field} must be non-empty printable text (max {limit} characters)")
 
 
 class ContinuityError(Exception):
@@ -56,8 +75,10 @@ class SQLiteContinuity:
     """
 
     def __init__(self, path: str | Path, *, clock: Callable[[], float] = time.time):
-        self.path = Path(path)
+        # Anchor relative paths so a later cwd change cannot silently switch DBs.
+        self.path = Path(path).absolute()
         self.clock = clock
+        self._prepare_private_database()
         with self._connection() as db:
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS jobs (
@@ -92,6 +113,38 @@ class SQLiteContinuity:
                 );
             """)
 
+    def _prepare_private_database(self) -> None:
+        """On POSIX, create a private file and refuse unsafe existing files.
+
+        The directory itself must be controlled by the application owner; an
+        attacker with write access to the directory can still race path names.
+        """
+        if os.name != "posix":
+            return  # Windows relies on filesystem ACLs set by the caller.
+        flags = os.O_RDWR | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+        try:
+            fd = os.open(self.path, flags, 0o600)
+        except FileExistsError:
+            info = os.lstat(self.path)
+            if not stat.S_ISREG(info.st_mode):
+                raise PermissionError("SQLite path must be a regular file, not a symlink or directory")
+            if info.st_uid != os.geteuid():
+                raise PermissionError("SQLite database must be owned by the current user")
+            if stat.S_IMODE(info.st_mode) & 0o077:
+                raise PermissionError("SQLite database must be private; use chmod 600 on an existing file")
+        else:
+            os.close(fd)
+
+    def _now(self) -> float:
+        now = self.clock()
+        if (
+            isinstance(now, bool)
+            or not isinstance(now, (int, float))
+            or not math.isfinite(now)
+        ):
+            raise ContinuityError("clock must return a finite numeric timestamp")
+        return float(now)
+
     @contextmanager
     def _connection(self) -> Iterator[sqlite3.Connection]:
         db = sqlite3.connect(self.path, timeout=5, isolation_level=None)
@@ -119,19 +172,20 @@ class SQLiteContinuity:
         db.execute("INSERT INTO events(job_id,kind,detail) VALUES(?,?,?)", (job_id, kind, detail))
 
     def create_job(self, job_id: str, steps: Sequence[Step]) -> None:
-        if not isinstance(job_id, str) or not job_id.strip() or not steps:
-            raise ValueError("job_id and at least one step are required")
+        _bounded_text(job_id, "job_id")
+        if not steps or len(steps) > MAX_JOB_STEPS:
+            raise ValueError(f"job requires 1 to {MAX_JOB_STEPS} steps")
         names: set[str] = set()
         receipt_keys: set[str] = set()
         for step in steps:
-            if not isinstance(step, Step) or not isinstance(step.name, str) or not step.name.strip():
-                raise ValueError("each step requires a non-empty name")
+            if not isinstance(step, Step):
+                raise ValueError("each step must be a Step")
+            _bounded_text(step.name, "step name")
             if type(step.effect) is not bool or step.name in names:
                 raise ValueError("effect must be bool; step names must be unique")
             names.add(step.name)
             if step.effect:
-                if not isinstance(step.receipt_key, str) or not step.receipt_key.strip():
-                    raise ValueError("effect steps need a non-empty receipt key")
+                _bounded_text(step.receipt_key, "receipt key")
                 if step.receipt_key in receipt_keys:
                     raise ValueError("receipt keys must be unique")
                 receipt_keys.add(step.receipt_key)
@@ -146,17 +200,21 @@ class SQLiteContinuity:
             self._event(db, job_id, "created", str(len(steps)))
 
     def claim(self, job_id: str, worker: str, *, lease_seconds: float = 60.0) -> Lease:
-        if not isinstance(worker, str) or not worker.strip():
-            raise ValueError("worker must be a non-empty string")
-        if not 0 < lease_seconds <= 86400:
-            raise ValueError("lease_seconds must be between 0 and 86400")
+        _bounded_text(worker, "worker")
+        if (
+            isinstance(lease_seconds, bool)
+            or not isinstance(lease_seconds, (float, int))
+            or not math.isfinite(lease_seconds)
+            or not 0 < lease_seconds <= 86400
+        ):
+            raise ValueError("lease_seconds must be finite and between 0 and 86400")
         with self._write() as db:
             row = db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
             if row is None:
                 raise ContinuityError("job not found")
             if row["status"] == "completed":
                 raise ContinuityError("job already completed")
-            now = self.clock()
+            now = self._now()
             if row["owner"] not in (None, worker) and row["lease_until"] > now:
                 raise LeaseBusy("another worker currently holds this job")
             epoch = row["epoch"] + 1
@@ -171,7 +229,7 @@ class SQLiteContinuity:
         row = db.execute("SELECT owner, epoch, lease_until FROM jobs WHERE id=?", (lease.job_id,)).fetchone()
         if row is None or (row["owner"], row["epoch"]) != (lease.worker, lease.epoch):
             raise StaleLease("worker is not the current lease holder")
-        if row["lease_until"] <= self.clock():
+        if row["lease_until"] <= self._now():
             raise StaleLease("worker lease expired")
 
     @staticmethod
@@ -220,8 +278,7 @@ class SQLiteContinuity:
 
         This API cannot verify the truth of the caller's evidence reference.
         """
-        if not isinstance(external_evidence_ref, str) or not external_evidence_ref.strip():
-            raise ValueError("a non-empty external evidence reference is required")
+        _bounded_text(external_evidence_ref, "external evidence reference", limit=MAX_EVIDENCE_LENGTH)
         with self._write() as db:
             self._check_lease(db, lease)
             step = db.execute(
@@ -259,8 +316,7 @@ class SQLiteContinuity:
 
         Do not call for a timeout, missing local receipt, or other unknown outcome.
         """
-        if not isinstance(absence_evidence_ref, str) or not absence_evidence_ref.strip():
-            raise ValueError("independent evidence of absence is required")
+        _bounded_text(absence_evidence_ref, "absence evidence reference", limit=MAX_EVIDENCE_LENGTH)
         with self._write() as db:
             self._check_lease(db, lease)
             step = self._open_step(db, lease.job_id)
