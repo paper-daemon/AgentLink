@@ -8,6 +8,8 @@ It is written exclusively for the public demo. **It is not the private AgentLink
 
 Requires Python 3.10+ and SQLite (included with Python). No API keys, web services, or cloud accounts are required.
 
+### Unix-like
+
 ```bash
 git clone https://github.com/paper-daemon/AgentLink.git
 cd AgentLink/demos/chat-long-turn-continuity
@@ -16,7 +18,22 @@ python3 examples/hello_engine.py
 python3 -m unittest -v test_public_engine.py
 ```
 
-If you do not want to install, use `PYTHONPATH=src python3 examples/hello_engine.py` (on Windows PowerShell, set `$env:PYTHONPATH = 'src'` first).
+### Windows (PowerShell) — **unverified**
+
+```powershell
+git clone https://github.com/paper-daemon/AgentLink.git
+cd AgentLink\demos\chat-long-turn-continuity
+py -3 -m pip install -e .
+py -3 examples\hello_engine.py
+py -3 -m unittest -v test_public_engine.py
+```
+
+If you do not want to install, use `PYTHONPATH`:
+
+- Unix: `PYTHONPATH=src python3 examples/hello_engine.py`
+- Windows PowerShell: `$env:PYTHONPATH = 'src'; py -3 examples\hello_engine.py`
+
+**Windows note:** POSIX `0600` permission checks do not enforce Windows ACLs. Store the SQLite database in a user-private directory under your control. See also the residual risks in [SECURITY_REVIEW.md](./SECURITY_REVIEW.md). These commands have not been verified on a real Windows environment.
 
 ## Minimal API
 
@@ -49,49 +66,7 @@ The `Lease` embeds a worker, increasing epoch, and a **random proof token**. The
 
 Merely knowing a worker name or epoch, including values from `snapshot()`, cannot authorize a mutation. A worker **cannot reclaim its own active lease by repeating the same label**. To keep working, it must call `engine.renew(lease, lease_seconds=60)`; to relinquish explicitly, `engine.release(lease)`. Once a lease expires or is released, its proof is invalid and a new claimant receives a new token. SQLite `BEGIN IMMEDIATE` serializes concurrent state changes.
 
-**Migration to demo v0.2.0:** existing v0/v1 SQLite databases are structurally checked and migrated to schema version 2. Previously active leases are fenced (owner cleared and epoch advanced); steps and `uncertain` external effects remain intact and still require reconciliation. Back up trusted databases before upgrading. A v2 database falsely marked as an older schema is rejected. Older `Lease(job_id, worker, epoch)` instances cannot authorize writes against v0.2.0.
-
-**Trust boundary:** this token proves possession of a lease to the trusted local engine. It is **not cryptographic worker identity authentication** for an untrusted remote service. Anyone with permission to edit the SQLite database, execute trusted code, or call `claim()` after expiry remains inside the trust boundary; use separately authenticated and authorized transport for remote workers.
-
-`next_action()` returns `run_local`, `execute_once`, `reconcile`, or `completed`. It never performs a network request or arbitrary external side effect. `snapshot()` is read-only and returns local evidence with an event trail. The API intentionally has no background agent and no automatic looping across turns.
-
-## Local storage and trust boundary
-
-On POSIX, new SQLite files are created owner-only (mode 0600); a group/world-readable existing DB, symlink, or file owned by a different user is rejected. Create the containing directory under a trusted account and keep it private (mode 0700). If upgrading an existing trusted DB, check its ownership and use chmod 600 explicitly. Windows requires suitable filesystem ACLs supplied by the caller.
-
-This example has **no worker authentication**: anyone who can write the DB can forge a worker label or receipt. Never expose this library as an unauthenticated multi-tenant service. IDs, names and receipt keys are bounded to 256 printable characters, evidence references to 512, and jobs to 1,024 steps. Do not store tokens, passwords or customer data as evidence references.
-
-Read the [security review](./SECURITY_REVIEW.md) for threats, verified mitigations, remaining limitations and the migration checklist.
-
-## Fail-closed persistence checks
-
-The demo validates its SQLite schema at opening time. Unknown schema versions, incomplete/modified table layouts and failed SQLite integrity checks stop execution instead of silently recreating tables. It also validates persisted job/step/receipt relationships before claims and state transitions; unexpected states are not reinterpreted as executable work.
-
-On POSIX the containing directory must be owned by the current user, must not be group/world writable, and must not be a symlink at the immediate parent level. The database file must not have extra hard links. These checks are repeated before opening a new connection. They do not eliminate races caused by a hostile process running with the same account's permissions.
-
-## Optional trusted provider read-back
-
-The library now exposes an explicit, **opt-in** reconciliation path. A caller may supply a trusted adapter implementing `ProviderReadback.read_status(job_id, receipt_key)`. It must query the **external provider's authoritative operation ledger**, not the AgentLink SQLite database.
-
-```python
-from agentlink_continuity import reconcile_remote, ProviderObservation
-
-class MyProvider:
-    def read_status(self, job_id: str, receipt_key: str) -> ProviderObservation:
-        # Implement by querying your actual provider's authoritative status.
-        # Never infer success from the local receipt or from a network timeout.
-        raise NotImplementedError
-
-# When next_action(lease) returns "reconcile":
-# result = reconcile_remote(engine, lease, "send", MyProvider())
-# Only result.outcome == "confirmed" marks the job step complete.
-```
-
-The adapter must return a `ProviderObservation` for the exact job ID and receipt key. A positive `confirmed` observation also requires an external, non-secret evidence reference. An `absent` or `unknown` observation, or a failed status call, leaves the step **uncertain** and never automatically retries. Even `absent` can mean an operation is still in flight or not visible due to eventual consistency.
-
-The provider query runs **outside** the SQLite write transaction. The lease and pending effect are rechecked afterwards, so a late reply cannot let a stale worker finalize the job. The sample test suite uses an independent SQLite ledger to simulate a remote system, but **does not call a real API**.
-
-**Trust limitation:** `ProviderReadback` is application-supplied code. This package cannot authenticate a provider, verify a digital signature, or prove an adapter is truthful. The older low-level `confirm_effect(..., external_evidence_ref=...)` is still available to trusted callers. Never expose these methods to untrusted clients without a separately designed authorization boundary.
+**Migration to demo v0.2.0:** existing v0/v1 SQLite databases are structurally checked and migrated to schema version 2. Previously active leases are fenced (owner cleared and epoch advanced); steps and `uncertain` external effects are preserved. Migration does not permit automatic replay of an already-reserved effect.
 
 ## Critical crash window and safety contract
 
