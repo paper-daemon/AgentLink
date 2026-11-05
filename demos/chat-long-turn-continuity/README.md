@@ -101,7 +101,7 @@ The `--json` output supports CI and reproducible bug reports. The inspector neve
 ## Tests
 
 ```bash
-python3 -m unittest -v test_continuity_demo.py test_inspect_checkpoint.py
+python3 -m unittest -v test_continuity_demo.py test_inspect_checkpoint.py test_json_checkpoint_safety.py
 ```
 
 The repository-wide Python CI also discovers this test through `pytest`.
