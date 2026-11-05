@@ -74,6 +74,12 @@ The package includes an [optional provider reconciliation API](./PUBLIC_ENGINE.m
 
 The `test_provider_readback.py` suite uses a separate synthetic ledger, not a real service or any private infrastructure.
 
+## Proof-bound worker handoffs (v0.2.0)
+
+The importable SQLite demo now uses a randomly generated lease proof to prevent forged operations using only a worker label and epoch. The proof stays out of snapshots and standard object representations. A valid owner may `renew(lease)` or `release(lease)`; naming the same worker again does not bypass an active lease. Older demo DBs migrate to schema v2 with existing leases invalidated and uncertain effects preserved.
+
+Read [PUBLIC_ENGINE.md](./PUBLIC_ENGINE.md) before upgrading a stored job. This does **not** authenticate remote workers or grant permission to expose the SQLite runtime directly to the internet.
+
 ## Security review
 
 The public engine now includes [security guidance and a threat model](./SECURITY_REVIEW.md), owner-only POSIX SQLite file creation, explicit rejection of unsafe existing DB paths, bounded identifiers and an adversarial test suite. This does **not** make the public demo or private AgentLink production runtime security certified.
