@@ -83,8 +83,8 @@ python3 -m unittest -v test_public_engine.py test_security_hardening.py
 After a turn is interrupted, inspect the saved JSON without changing it:
 
 ```bash
-python3 inspect_checkpoint.py /tmp/agentlink-chat-job.json
-python3 inspect_checkpoint.py /tmp/agentlink-chat-job.json --json
+python3 inspect_checkpoint.py "$STATE"
+python3 inspect_checkpoint.py "$STATE" --json
 ```
 
 The inspector validates demo checkpoint structure, step completion, local receipt counters and event-timeline consistency. It classifies snapshots as:
