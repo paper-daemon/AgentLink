@@ -7,10 +7,13 @@ reconciled with the external system before any retry.
 from __future__ import annotations
 
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+import hashlib
+import hmac
 import math
 import os
+import secrets
 import sqlite3
 import stat
 import time
@@ -58,6 +61,7 @@ class Lease:
     job_id: str
     worker: str
     epoch: int
+    proof: str = field(repr=False)  # bearer capability; never log or serialize
 
 
 @dataclass(frozen=True)
@@ -93,16 +97,19 @@ class SQLiteContinuity:
                     "unexpected or incomplete database schema; refusing automatic repair"
                 )
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1):
+            if version not in (0, 1, 2):
                 raise ContinuityError("unsupported database schema version")
             if not found:
+                if version != 0:
+                    raise ContinuityError("missing tables in a versioned database")
                 db.executescript("""
                 CREATE TABLE IF NOT EXISTS jobs (
                     id TEXT PRIMARY KEY,
                     status TEXT NOT NULL DEFAULT 'running',
                     owner TEXT,
                     epoch INTEGER NOT NULL DEFAULT 0,
-                    lease_until REAL NOT NULL DEFAULT 0
+                    lease_until REAL NOT NULL DEFAULT 0,
+                    proof_hash TEXT
                 );
                 CREATE TABLE IF NOT EXISTS steps (
                     job_id TEXT NOT NULL REFERENCES jobs(id),
@@ -129,7 +136,8 @@ class SQLiteContinuity:
                 );
             """)
             expected_columns = {
-                "jobs": ["id", "status", "owner", "epoch", "lease_until"],
+                "jobs": ["id", "status", "owner", "epoch", "lease_until"]
+                + (["proof_hash"] if not found or version == 2 else []),
                 "steps": ["job_id", "position", "name", "effect", "receipt_key", "status"],
                 "receipts": ["job_id", "receipt_key", "evidence_ref"],
                 "events": ["id", "job_id", "kind", "detail"],
@@ -142,9 +150,22 @@ class SQLiteContinuity:
                 raise ContinuityError("SQLite integrity check failed")
             if db.execute("PRAGMA foreign_key_check").fetchone():
                 raise ContinuityError("SQLite foreign key integrity check failed")
-            # Upgrade legacy version-zero demo DB only after validating its structure.
-            if version == 0:
-                db.execute("PRAGMA user_version=1")
+            if not found:
+                db.execute("PRAGMA user_version=2")
+            elif version in (0, 1):
+                # Fence pre-proof leases without replaying uncertain effects.
+                db.execute("BEGIN IMMEDIATE")
+                try:
+                    db.execute("ALTER TABLE jobs ADD COLUMN proof_hash TEXT")
+                    db.execute(
+                        "UPDATE jobs SET owner=NULL, lease_until=0, epoch=epoch+1 "
+                        "WHERE owner IS NOT NULL"
+                    )
+                    db.execute("PRAGMA user_version=2")
+                    db.commit()
+                except BaseException:
+                    db.rollback()
+                    raise
 
     def _prepare_private_database(self) -> None:
         """On POSIX, create a private file and refuse unsafe existing files.
