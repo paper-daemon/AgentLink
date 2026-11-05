@@ -29,4 +29,4 @@ jobs:
         run: python3 run_demo.py
       - name: Run continuity regression tests
         working-directory: demos/chat-long-turn-continuity
-        run: python3 -m unittest -v test_continuity_demo.py
+        run: python3 -m unittest -v test_continuity_demo.py test_inspect_checkpoint.py
