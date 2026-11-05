@@ -53,10 +53,30 @@ python3 continuity_demo.py status "$STATE"
 
 Each command is a separate process. The JSON file is the durable truth that lets the next continuation resume.
 
+## Read-only checkpoint inspector
+
+After a turn is interrupted, inspect the saved JSON without changing it:
+
+```bash
+python3 inspect_checkpoint.py /tmp/agentlink-chat-job.json
+python3 inspect_checkpoint.py /tmp/agentlink-chat-job.json --json
+```
+
+The inspector validates demo checkpoint structure, step completion, local receipt counters and event-timeline consistency. It classifies snapshots as:
+
+- `in_progress`: pending work, with no assumption that an absent receipt proves an external action did not occur.
+- `receipt_reconciliation_required`: a pending effect step already has a local receipt. Reconcile it rather than blindly replaying it.
+- `completed`: every step completed with consistent local evidence.
+- `invalid`: malformed or contradictory state. The command returns exit status 2.
+
+The `--json` output supports CI and reproducible bug reports. The inspector never writes the checkpoint file.
+
+**Important boundary:** this tool only examines the *simulator's locally recorded evidence*. A local receipt is not proof that a real external service accepted or committed an effect. In a real integration, reconcile with that system using its authoritative status or idempotency contract before retrying. This demo does not promise exactly-once delivery for arbitrary external tools.
+
 ## Tests
 
 ```bash
-python3 -m unittest -v test_continuity_demo.py
+python3 -m unittest -v test_continuity_demo.py test_inspect_checkpoint.py
 ```
 
 The repository-wide Python CI also discovers this test through `pytest`.
