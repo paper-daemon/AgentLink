@@ -57,6 +57,12 @@ This example has **no worker authentication**: anyone who can write the DB can f
 
 Read the [security review](./SECURITY_REVIEW.md) for threats, verified mitigations, remaining limitations and the migration checklist.
 
+## Fail-closed persistence checks
+
+The demo validates its SQLite schema at opening time. Unknown schema versions, incomplete/modified table layouts and failed SQLite integrity checks stop execution instead of silently recreating tables. It also validates persisted job/step/receipt relationships before claims and state transitions; unexpected states are not reinterpreted as executable work.
+
+On POSIX the containing directory must be owned by the current user, must not be group/world writable, and must not be a symlink at the immediate parent level. The database file must not have extra hard links. These checks are repeated before opening a new connection. They do not eliminate races caused by a hostile process running with the same account's permissions.
+
 ## Critical crash window and safety contract
 
 A **reservation is written before** the caller attempts an external effect. After an interruption, that step is `uncertain`, and a later call returns `reconcile`. This covers both possible crash windows: the request might not have been sent, or it might have succeeded remotely before local confirmation.
