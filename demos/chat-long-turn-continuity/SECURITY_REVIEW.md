@@ -32,6 +32,18 @@ These controls were tested against public demo fixtures. They do **not** imply t
 
 These checks reduce accidental corruption and common filesystem abuse. They are not proof against a hostile process with the same account privileges, hostile code already executing inside the program, or a provider with ambiguous remote operation outcomes.
 
+## JSON demonstration checkpoint integrity (2026-11-05)
+
+The earlier simple JSON demo previously overwrote state directly and allowed `init` to overwrite an existing interrupted job. This could truncate state during an interrupted write or erase an effect receipt during reinitialization.
+
+- Checkpoints now use a fsynced, same-directory temporary file and atomic replacement.
+- Initial checkpoint creation uses an exclusive hard link, so an existing job is never clobbered.
+- Existing checkpoint reads validate JSON structure with the public inspector, enforce a 1 MiB size limit and reject non-private/symlinked POSIX paths.
+- The simulator requires a trusted local parent directory and creates checkpoint files with owner-only permissions.
+- Dedicated tests cover interrupted receipt preservation, replacement failure, concurrent initializers from separate processes, corrupt state and unsafe file paths.
+
+**Residual limitation:** the JSON demo remains deliberately **single-writer**. Atomic replacement is not a substitute for locking or database transactions. Concurrent workers that execute steps against one JSON file may still lose updates; use the separate SQLite engine for real concurrent claim tests. Windows requires caller-supplied private directory ACLs.
+
 ## Critical residual risks
 
 - **No worker authentication:** a process with access to the SQLite database can still claim work or forge local evidence. Never expose this library as an unauthenticated remote service.

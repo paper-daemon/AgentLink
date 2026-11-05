@@ -3,7 +3,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
+import stat
+import tempfile
 from typing import Any
 
 DEFAULT_STEPS = [
@@ -17,12 +20,77 @@ class SimulatedInterruption(RuntimeError):
     pass
 
 
+MAX_CHECKPOINT_BYTES = 1024 * 1024  # Public demo only, no arbitrary-sized job data.
+
+
+def _check_directory(path: Path) -> None:
+    """Require a trusted parent; a shared /tmp path is not a safe job store."""
+    if os.name != "posix":
+        return
+    info = os.lstat(path.parent)
+    if (not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid()
+            or stat.S_IMODE(info.st_mode) & 0o022):
+        raise PermissionError("checkpoint parent must be owned and not group/world writable")
+
+
+def _check_existing(path: Path) -> None:
+    if os.name != "posix":
+        return  # On Windows, callers must provision private directory ACLs.
+    info = os.lstat(path)  # Never follow a symlink to an unrelated file.
+    if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
+            or stat.S_IMODE(info.st_mode) & 0o077 or info.st_nlink != 1):
+        raise PermissionError("checkpoint must be an owner-only regular file")
+
+
 def _load(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+    from inspect_checkpoint import inspect_checkpoint
+
+    path = path.absolute()
+    _check_directory(path)
+    _check_existing(path)
+    with path.open("rb") as stream:
+        raw = stream.read(MAX_CHECKPOINT_BYTES + 1)
+    if len(raw) > MAX_CHECKPOINT_BYTES:
+        raise ValueError("checkpoint exceeds public demo size limit")
+    state = json.loads(raw.decode("utf-8"))
+    report = inspect_checkpoint(state)
+    if report["errors"]:
+        raise ValueError("invalid checkpoint: " + "; ".join(report["errors"][:4]))
+    return state
 
 
-def _save(path: Path, state: dict[str, Any]) -> None:
-    path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+def _save(path: Path, state: dict[str, Any], *, exclusive: bool = False) -> None:
+    """Durable same-directory replace, never a partial in-place JSON overwrite.
+
+    Initial writes use an atomic hard-link creation, which raises
+    FileExistsError rather than discarding any previous job/receipt state.
+    """
+    path = path.absolute()
+    _check_directory(path)
+    if not exclusive:
+        _check_existing(path)
+    payload = (json.dumps(state, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    if len(payload) > MAX_CHECKPOINT_BYTES:
+        raise ValueError("checkpoint exceeds public demo size limit")
+    fd, name = tempfile.mkstemp(prefix=".agentlink-checkpoint-", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        if exclusive:
+            os.link(name, path)  # Fails if a checkpoint already exists.
+        else:
+            os.replace(name, path)  # Atomic on a trusted local filesystem.
+        if os.name == "posix":
+            directory_fd = os.open(path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
 
 
 def _event(state: dict[str, Any], kind: str, **fields: Any) -> None:
@@ -54,7 +122,7 @@ def init_job(
         "timeline": [],
     }
     _event(state, "job_created", objective=objective)
-    _save(path, state)
+    _save(path, state, exclusive=True)
     return state
 
 

@@ -42,7 +42,7 @@ The expected final state contains exactly one external effect even though the pr
 ## Run the commands manually
 
 ```bash
-STATE=/tmp/agentlink-chat-job.json
+STATE="$(mktemp -d)/agentlink-chat-job.json"
 python3 continuity_demo.py init "$STATE"
 python3 continuity_demo.py turn "$STATE" --worker chat-turn-1
 python3 continuity_demo.py turn "$STATE" --worker chat-turn-2
@@ -52,6 +52,10 @@ python3 continuity_demo.py status "$STATE"
 ```
 
 Each command is a separate process. The JSON file is the durable truth that lets the next continuation resume.
+
+**Checkpoint safety:** the original JSON simulator now writes via fsynced, same-directory atomic file replacement, and `init` refuses to overwrite a job that already exists. On POSIX it requires an owner-controlled directory that is not group/world writable, and uses owner-only (0600) checkpoint files. It rejects symlinks and malformed/oversized state before continuing. Use `mktemp -d`, not a bare shared `/tmp/job.json` file.
+
+This JSON demonstration is still **single-writer only**: atomic saves prevent truncated files, but do not serialize concurrent state transitions. For multiple competing workers use the separately packaged [SQLite engine](./PUBLIC_ENGINE.md), which has transactional lease claims.
 
 ## Importable SQLite continuity engine
 
@@ -79,8 +83,8 @@ python3 -m unittest -v test_public_engine.py test_security_hardening.py
 After a turn is interrupted, inspect the saved JSON without changing it:
 
 ```bash
-python3 inspect_checkpoint.py /tmp/agentlink-chat-job.json
-python3 inspect_checkpoint.py /tmp/agentlink-chat-job.json --json
+python3 inspect_checkpoint.py "$STATE"
+python3 inspect_checkpoint.py "$STATE" --json
 ```
 
 The inspector validates demo checkpoint structure, step completion, local receipt counters and event-timeline consistency. It classifies snapshots as:
@@ -97,7 +101,7 @@ The `--json` output supports CI and reproducible bug reports. The inspector neve
 ## Tests
 
 ```bash
-python3 -m unittest -v test_continuity_demo.py test_inspect_checkpoint.py
+python3 -m unittest -v test_continuity_demo.py test_inspect_checkpoint.py test_json_checkpoint_safety.py
 ```
 
 The repository-wide Python CI also discovers this test through `pytest`.
