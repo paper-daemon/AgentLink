@@ -13,6 +13,12 @@ AgentLink is built around one chat-native idea: a normal chat thread should be a
 
 The production AgentLink core is private. This public repository contains bounded demos, tests, architecture notes, and reproducible proof surfaces for selected execution contracts.
 
+## New here? Start in 5 minutes
+
+**[Start here: run a demo, choose a first issue, and open a safe PR](./START_HERE.md)**
+
+No API key or production account is required to try the public examples. You can begin with a no-install browser demo, a Python reliability exercise, or a small test contribution. The unpublished production core is not required.
+
 ## Try the flagship continuity demo
 
 **[▶ Try the no-install browser demo](https://paper-daemon.github.io/agentlink-continuity/)** — start a chat job, interrupt it after an effect, reload the page, and resume from durable browser state without replaying the effect.
@@ -109,10 +115,11 @@ This is why AgentLink treats checkpoints, effect receipts, idempotency, worker o
 The public repo is early-stage but already has real external participation:
 
 - external contributor fork → **[PR #20](https://github.com/paper-daemon/AgentLink/pull/20)** → validation → merge
+- three external contributions reviewed and merged: **[PR #27](https://github.com/paper-daemon/AgentLink/pull/27)** (receipt-state coverage), **[PR #28](https://github.com/paper-daemon/AgentLink/pull/28)** (worker handoff), and **[PR #29](https://github.com/paper-daemon/AgentLink/pull/29)** (interrupted-effect recovery)
 - flagship continuity implementation → **[PR #25](https://github.com/paper-daemon/AgentLink/pull/25)** → Full Python suite success → squash merge
 - newcomer tasks are available through **[`good first issue`](https://github.com/paper-daemon/AgentLink/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22good%20first%20issue%22)**, including worker-handoff coverage for the flagship demo
 
-See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for the public/private license boundary and contribution rules.
+See **[START_HERE.md](./START_HERE.md)** to try the project and choose your first contribution, or **[CONTRIBUTING.md](./CONTRIBUTING.md)** for license boundaries, review expectations and contribution rules.
 
 ## Current engineering directions
 

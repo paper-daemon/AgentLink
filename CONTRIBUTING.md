@@ -4,6 +4,12 @@ Thanks for taking the time to inspect or improve the public AgentLink repository
 
 AgentLink uses a deliberately mixed publication model: the production execution core remains private, while selected demos, tools, tests, architecture notes, and reproducible proofs are published so chat continuity, reliability, and execution contracts can be inspected and improved safely.
 
+## First time here?
+
+Begin with **[START_HERE.md](./START_HERE.md)**. It includes a no-install demo, a five-minute local trial, a tested public Python entry point, and links to current small tasks. You do **not** need access to private AgentLink, its devices, a paid account, API keys, or infrastructure.
+
+If an issue looks interesting, leave a short comment describing the behavior you want to test before spending time on a large change. If you're unsure about public licensing or scope, ask on the issue before copying code.
+
 ## What is currently open for code contributions
 
 The clearest independently licensed contribution surfaces are:
@@ -30,6 +36,12 @@ Useful contributions include:
 - tests that make continuity and reliability invariants harder to regress
 
 Prefer one focused change with a clear verification path over a large speculative rewrite.
+
+## What a reviewable contribution looks like
+
+A useful small PR shows a concrete before/after behavior, stays inside an explicitly licensed public surface, and includes a deterministic test or exact reproduction steps. A focused test-only PR can be just as valuable as a feature.
+
+Examples of accepted external contributions include [#20](https://github.com/paper-daemon/AgentLink/pull/20), [#27](https://github.com/paper-daemon/AgentLink/pull/27), [#28](https://github.com/paper-daemon/AgentLink/pull/28) and [#29](https://github.com/paper-daemon/AgentLink/pull/29). Use the [PR template](./.github/PULL_REQUEST_TEMPLATE.md) and add `N/A` for checks that don't apply.
 
 ## Before opening a pull request
 
@@ -69,6 +81,10 @@ A passing test suite is evidence for the behavior it exercises, not a claim that
 ## Security-sensitive findings
 
 Do not put secrets, exploit-enabling private infrastructure details, or confidential material in a public issue or pull request. Use the repository's security guidance in `SECURITY.md` and keep public reports sanitized.
+
+## If a review is delayed
+
+Maintainers review as capacity permits; there is no promised response time. For an older PR, a polite follow-up on the existing discussion is encouraged. Do not duplicate a PR just to attract attention. A maintainer should respond with a reason if a proposed change cannot be merged, and should preserve attribution to the contributor whenever the contribution is reused.
 
 ## Production core
 
