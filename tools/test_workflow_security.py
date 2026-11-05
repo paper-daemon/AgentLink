@@ -33,7 +33,7 @@ class WorkflowSecurityTests(unittest.TestCase):
                     without_sarif = text.replace("  security-events: write\n", "")
                     self.assertNotRegex(without_sarif, r"(?m)^[ \t]+[a-z-]+: (?:write|write-all)\s*$")
                 else:
-                self.assertNotRegex(text, r"(?m)^[ \t]+[a-z-]+: (?:write|write-all)\s*$")
+                    self.assertNotRegex(text, r"(?m)^[ \t]+[a-z-]+: (?:write|write-all)\s*$")
                 self.assertNotRegex(text, r"(?m)^[ \t]*permissions:\s*write-all")
 
     def test_all_remote_actions_are_pinned_and_checkout_is_not_persistent(self):
