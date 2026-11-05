@@ -62,6 +62,26 @@ class WorkflowSecurityTests(unittest.TestCase):
                 with self.subTest(workflow=path.name, retired_pin=sha[:12]):
                     self.assertNotIn(sha, text)
 
+    def test_full_history_secret_scan_is_non_disclosing(self):
+        path = WORKFLOWS / "secret-history-scan.yml"
+        self.assertTrue(path.exists())
+        workflow = path.read_text(encoding="utf-8")
+        self.assertIn("fetch-depth: 0", workflow)
+        self.assertIn("persist-credentials: false", workflow)
+        self.assertIn("gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e", workflow)
+        self.assertIn("GITLEAKS_VERSION: '8.30.0'", workflow)
+        for disabled in (
+            "GITLEAKS_ENABLE_COMMENTS",
+            "GITLEAKS_ENABLE_UPLOAD_ARTIFACT",
+            "GITLEAKS_ENABLE_SUMMARY",
+        ):
+            with self.subTest(control=disabled):
+                self.assertIn(f"{disabled}: 'false'", workflow)
+        for event in ("  pull_request:", "  push:", "  schedule:", "  workflow_dispatch:"):
+            self.assertIn(event, workflow)
+        self.assertNotIn("secrets.GITLEAKS_LICENSE", workflow)
+        self.assertNotIn("security-events: write", workflow)
+
     def test_no_privileged_pr_trigger(self):
         for path in self.workflows:
             with self.subTest(workflow=path.name):
