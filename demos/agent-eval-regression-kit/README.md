@@ -1,5 +1,10 @@
 # Agent Evaluation & Regression Kit
 
+> 🎬 **[Watch the 22-second Agent evaluation demo](https://paper-daemon.github.io/agentlink-continuity/gallery.html#agent-evaluation)** · [Direct MP4](https://paper-daemon.github.io/agentlink-continuity/videos/agent-evaluation.mp4) · [All 7 demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)
+>
+> The clip visualizes actual public CLI output from a pinned source revision; it does not depict the private production AgentLink runtime.
+
+
 > Self-initiated public demo. This is not client work and does not claim measured production improvements.
 
 A tiny, dependency-free harness for turning AI-agent behavior into repeatable regression checks.
