@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentlink-continuity-demo"
-version = "0.1.0"
+version = "0.1.1"
 description = "Small, explicit, durable chat-job execution primitives (public demonstration)"
 readme = "PUBLIC_ENGINE.md"
 requires-python = ">=3.10"
