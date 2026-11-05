@@ -14,6 +14,7 @@ import os
 import sqlite3
 import stat
 import time
+import unicodedata
 from typing import Callable, Iterator, Sequence
 
 MAX_TEXT_LENGTH = 256
@@ -28,7 +29,7 @@ def _bounded_text(value: str, field: str, *, limit: int = MAX_TEXT_LENGTH) -> No
         or not value
         or value != value.strip()
         or len(value) > limit
-        or any(ord(char) < 32 or ord(char) == 127 for char in value)
+        or any(unicodedata.category(char) in {"Cc", "Cf", "Cs"} for char in value)
     ):
         raise ValueError(f"{field} must be non-empty printable text (max {limit} characters)")
 
@@ -80,7 +81,22 @@ class SQLiteContinuity:
         self.clock = clock
         self._prepare_private_database()
         with self._connection() as db:
-            db.executescript("""
+            expected = {"jobs", "steps", "receipts", "events"}
+            found = {
+                row["name"] for row in db.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' "
+                    "AND name NOT LIKE 'sqlite_%'"
+                )
+            }
+            if found and found != expected:
+                raise ContinuityError(
+                    "unexpected or incomplete database schema; refusing automatic repair"
+                )
+            version = db.execute("PRAGMA user_version").fetchone()[0]
+            if version not in (0, 1):
+                raise ContinuityError("unsupported database schema version")
+            if not found:
+                db.executescript("""
                 CREATE TABLE IF NOT EXISTS jobs (
                     id TEXT PRIMARY KEY,
                     status TEXT NOT NULL DEFAULT 'running',
@@ -112,6 +128,23 @@ class SQLiteContinuity:
                     detail TEXT NOT NULL
                 );
             """)
+            expected_columns = {
+                "jobs": ["id", "status", "owner", "epoch", "lease_until"],
+                "steps": ["job_id", "position", "name", "effect", "receipt_key", "status"],
+                "receipts": ["job_id", "receipt_key", "evidence_ref"],
+                "events": ["id", "job_id", "kind", "detail"],
+            }
+            for table, names in expected_columns.items():
+                actual = [row["name"] for row in db.execute(f"PRAGMA table_info({table})")]
+                if actual != names:
+                    raise ContinuityError(f"unsupported schema for {table}")
+            if db.execute("PRAGMA quick_check").fetchone()[0] != "ok":
+                raise ContinuityError("SQLite integrity check failed")
+            if db.execute("PRAGMA foreign_key_check").fetchone():
+                raise ContinuityError("SQLite foreign key integrity check failed")
+            # Upgrade legacy version-zero demo DB only after validating its structure.
+            if version == 0:
+                db.execute("PRAGMA user_version=1")
 
     def _prepare_private_database(self) -> None:
         """On POSIX, create a private file and refuse unsafe existing files.
@@ -121,6 +154,7 @@ class SQLiteContinuity:
         """
         if os.name != "posix":
             return  # Windows relies on filesystem ACLs set by the caller.
+        self._check_parent_directory()
         flags = os.O_RDWR | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
         try:
             fd = os.open(self.path, flags, 0o600)
@@ -132,8 +166,26 @@ class SQLiteContinuity:
                 raise PermissionError("SQLite database must be owned by the current user")
             if stat.S_IMODE(info.st_mode) & 0o077:
                 raise PermissionError("SQLite database must be private; use chmod 600 on an existing file")
+            if info.st_nlink != 1:
+                raise PermissionError("SQLite database must not be hard-linked")
         else:
             os.close(fd)
+
+    def _check_parent_directory(self) -> None:
+        info = os.lstat(self.path.parent)
+        if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid():
+            raise PermissionError("database directory must be a real directory owned by the current user")
+        if stat.S_IMODE(info.st_mode) & 0o022:
+            raise PermissionError("database directory must not be writable by other users")
+
+    def _check_database_path(self) -> None:
+        if os.name != "posix":
+            return
+        self._check_parent_directory()
+        info = os.lstat(self.path)
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
+                or stat.S_IMODE(info.st_mode) & 0o077 or info.st_nlink != 1):
+            raise PermissionError("database must be a private regular file owned by current user")
 
     def _now(self) -> float:
         now = self.clock()
@@ -147,6 +199,8 @@ class SQLiteContinuity:
 
     @contextmanager
     def _connection(self) -> Iterator[sqlite3.Connection]:
+        # Recheck before every connection rather than only at object construction.
+        self._check_database_path()
         db = sqlite3.connect(self.path, timeout=5, isolation_level=None)
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
@@ -199,6 +253,58 @@ class SQLiteContinuity:
             )
             self._event(db, job_id, "created", str(len(steps)))
 
+    @staticmethod
+    def _validate_job(db: sqlite3.Connection, job_id: str) -> None:
+        """Fail closed on inconsistent or unexpected persisted execution state."""
+        job = db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
+        if job is None:
+            raise ContinuityError("job not found")
+        if job["status"] not in ("running", "completed"):
+            raise ContinuityError("invalid job status")
+        if (type(job["epoch"]) is not int or job["epoch"] < 0
+                or not isinstance(job["lease_until"], (int, float))
+                or not math.isfinite(job["lease_until"])):
+            raise ContinuityError("invalid job lease metadata")
+        steps = db.execute(
+            "SELECT * FROM steps WHERE job_id=? ORDER BY position", (job_id,)
+        ).fetchall()
+        if not steps or len(steps) > MAX_JOB_STEPS:
+            raise ContinuityError("job has invalid step count")
+        keys = set()
+        unfinished = False
+        for index, step in enumerate(steps):
+            if step["position"] != index or step["effect"] not in (0, 1):
+                raise ContinuityError("invalid step position or effect flag")
+            if step["status"] not in ("pending", "uncertain", "completed"):
+                raise ContinuityError("invalid step status; refusing to execute")
+            if step["status"] != "completed":
+                unfinished = True
+            elif unfinished:
+                raise ContinuityError("completed step follows an unfinished step")
+            key = step["receipt_key"]
+            if step["effect"] == 1:
+                if not isinstance(key, str) or not key or key in keys:
+                    raise ContinuityError("invalid or repeated effect receipt key")
+                keys.add(key)
+                receipt = db.execute(
+                    "SELECT evidence_ref FROM receipts WHERE job_id=? AND receipt_key=?",
+                    (job_id, key),
+                ).fetchone()
+                if (receipt is None) != (step["status"] != "completed"):
+                    raise ContinuityError("effect status conflicts with recorded receipt")
+            elif key is not None or step["status"] == "uncertain":
+                raise ContinuityError("local step has invalid effect metadata")
+        count = db.execute(
+            "SELECT COUNT(*) FROM receipts WHERE job_id=?", (job_id,)
+        ).fetchone()[0]
+        confirmed = sum(
+            step["effect"] == 1 and step["status"] == "completed" for step in steps
+        )
+        if count != confirmed:
+            raise ContinuityError("orphaned or contradictory effect receipt")
+        if (job["status"] == "completed") == unfinished:
+            raise ContinuityError("job status conflicts with step completion")
+
     def claim(self, job_id: str, worker: str, *, lease_seconds: float = 60.0) -> Lease:
         _bounded_text(worker, "worker")
         if (
@@ -209,6 +315,7 @@ class SQLiteContinuity:
         ):
             raise ValueError("lease_seconds must be finite and between 0 and 86400")
         with self._write() as db:
+            self._validate_job(db, job_id)
             row = db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
             if row is None:
                 raise ContinuityError("job not found")
@@ -226,6 +333,7 @@ class SQLiteContinuity:
             return Lease(job_id, worker, epoch)
 
     def _check_lease(self, db: sqlite3.Connection, lease: Lease) -> None:
+        self._validate_job(db, lease.job_id)
         row = db.execute("SELECT owner, epoch, lease_until FROM jobs WHERE id=?", (lease.job_id,)).fetchone()
         if row is None or (row["owner"], row["epoch"]) != (lease.worker, lease.epoch):
             raise StaleLease("worker is not the current lease holder")
@@ -337,6 +445,7 @@ class SQLiteContinuity:
     def snapshot(self, job_id: str) -> dict:
         """Inspect local job state without claiming a lease or mutating anything."""
         with self._connection() as db:
+            self._validate_job(db, job_id)
             job = db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
             if job is None:
                 raise ContinuityError("job not found")
