@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 import sys
 import unittest
 
@@ -15,6 +16,42 @@ from demo import (
     decide_recovery,
     simulate_interrupted_effect,
 )
+
+
+class DemoCliTests(unittest.TestCase):
+    def test_cli_reports_conservative_recovery_outcomes(self):
+        """Check local simulation output, not proof of actual external delivery."""
+        demo_path = Path(__file__).resolve().with_name("demo.py")
+        result = subprocess.run(
+            [sys.executable, str(demo_path)],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        rows = [
+            dict(field.split("=", 1) for field in line.split() if "=" in field)
+            for line in result.stdout.splitlines()
+            if line.lstrip().startswith("action=")
+        ]
+        cases = [
+            {"action": "send-summary", "receipt": "completed",
+             "decision": "skip_already_completed"},
+            {"action": "write-report", "receipt": "not_started",
+             "decision": "retry"},
+            {"action": "external-update", "receipt": "uncertain",
+             "decision": "reconcile_manually"},
+            {"action": "payment-webhook", "context": "interrupted_after_boundary",
+             "receipt": "uncertain", "decision": "reconcile_manually"},
+            {"action": "payment-webhook", "context": "interrupted_before_dispatch",
+             "receipt": "not_started", "decision": "retry"},
+        ]
+        for expected in cases:
+            with self.subTest(expected=expected):
+                self.assertTrue(
+                    any(expected.items() <= row.items() for row in rows),
+                    f"Missing recovery outcome {expected!r} in CLI output:\n{result.stdout}",
+                )
 
 
 class RecoveryDecisionTests(unittest.TestCase):
