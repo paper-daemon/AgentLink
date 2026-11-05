@@ -51,6 +51,17 @@ class WorkflowSecurityTests(unittest.TestCase):
                     "checkout must have persist-credentials: false",
                 )
 
+    def test_deprecated_node20_actions_are_not_reintroduced(self):
+        retired = (
+            "11d5960a326750d5838078e36cf38b85af677262",  # checkout v4
+            "a26af69be951a213d495a4c3e4e4022e16d87065",  # setup-python v5
+        )
+        for path in self.workflows:
+            text = path.read_text(encoding="utf-8")
+            for sha in retired:
+                with self.subTest(workflow=path.name, retired_pin=sha[:12]):
+                    self.assertNotIn(sha, text)
+
     def test_no_privileged_pr_trigger(self):
         for path in self.workflows:
             with self.subTest(workflow=path.name):
