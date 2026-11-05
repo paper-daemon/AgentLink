@@ -1,5 +1,10 @@
 # Reliable API Job Orchestrator Demo
 
+> 🎬 **[Watch the 22-second API job orchestration demo](https://paper-daemon.github.io/agentlink-continuity/gallery.html#api-job-orchestrator)** · [Direct MP4](https://paper-daemon.github.io/agentlink-continuity/videos/api-job-orchestrator.mp4) · [All 7 demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)
+>
+> The clip visualizes actual public CLI/test output from a pinned source revision. This is a simulation or regression test, not a production integration.
+
+
 A small standalone Python demo of reliability primitives useful in API-backed AI and automation platforms.
 
 ## Demonstrates
