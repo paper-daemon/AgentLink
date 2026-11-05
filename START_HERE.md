@@ -1,5 +1,7 @@
 # Start contributing to AgentLink in 5 minutes
 
+**🎬 [Watch all 7 public AgentLink demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)**, then pick the code example that interests you. Each video links back to its source and runnable instructions. The six short clips visualize verified subprocess logs, not production recordings.
+
 AgentLink explores a specific problem: **what happens to useful work when an AI chat turn, model, worker, or network connection ends?** The public repository contains intentionally small, independently licensed ways to test durable execution and safe recovery.
 
 **The production AgentLink core is private.** You can contribute to the public demos without accessing production systems, devices, accounts, credentials, or private infrastructure.
