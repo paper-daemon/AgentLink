@@ -24,9 +24,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install public continuity library
+        working-directory: demos/chat-long-turn-continuity
+        run: python3 -m pip install -e .
+      - name: Run installed library example
+        working-directory: demos/chat-long-turn-continuity
+        run: python3 examples/hello_engine.py
       - name: Run fresh-process continuity story
         working-directory: demos/chat-long-turn-continuity
         run: python3 run_demo.py
       - name: Run continuity regression tests
         working-directory: demos/chat-long-turn-continuity
-        run: python3 -m unittest -v test_continuity_demo.py test_inspect_checkpoint.py
+        run: python3 -m unittest -v test_continuity_demo.py test_inspect_checkpoint.py test_public_engine.py
