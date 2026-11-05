@@ -46,7 +46,7 @@ The earlier simple JSON demo previously overwrote state directly and allowed `in
 
 ## Public Git history scanning (2026-11-05)
 
-A pinned Gitleaks v3 action executes with Gitleaks CLI 8.30.0. On `pull_request` and `push` it scans the new commit range; scheduled and manual runs scan the **complete public repository Git history** after `fetch-depth: 0` checkout. Pull request comments, job summaries and report artifact uploads are disabled to avoid automatically redistributing possible secret values. Gitleaks itself uses redaction for console results.
+A pinned Gitleaks v3 action executes with Gitleaks CLI 8.30.0. On `pull_request` and `push` the Action checks the new commit range. **Every run**, including PRs and pushes, additionally verifies the Gitleaks CLI release archive against an upstream SHA-256 digest and scans all locally fetched Git refs with `--log-opts="--all --full-history"` after full-history checkout. This adds defense against hidden historical credentials; weekly and manual runs repeat the historical scan. Pull request comments, job summaries and report artifact uploads are disabled to avoid automatically redistributing possible secret values. Gitleaks itself uses redaction for console results.
 
 A passing scanner is evidence that its current rules did not flag a leak **in the tested scope**. It is not proof that no credentials were ever exposed, nor that credentials in another repository, fork, tag, untracked local file, or private core are safe. Confirm scanner scope and GitHub Actions run status before claiming any historical scan completed.
 

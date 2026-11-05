@@ -32,7 +32,7 @@ The independently MIT-licensed public continuity demo has a focused [security re
 
 ## Automated public Git secret scanning
 
-The public repository scans incoming changes on pull requests and pushes. A separate weekly and manually dispatched run scans the **complete Git history**, using the pinned Gitleaks Action and a full Git checkout. The scanner uses redaction and does not post findings as pull request comments, job summaries, or downloadable results artifacts. The workflow only receives read-only repository permissions.
+The public repository scans incoming changes on pull requests and pushes with the pinned Gitleaks Action. **Every workflow run also performs an independent full-history scan of all fetched Git refs**, using Gitleaks CLI with an official release archive verified by SHA-256. The workflow fetches full Git history and runs on PRs, pushes, a weekly schedule, and manual dispatch. The scanner uses redaction and does not post findings as pull request comments, job summaries, or downloadable results artifacts. The workflow only receives read-only repository permissions.
 
 If a leak is suspected, **do not paste the value into a public issue or comment**. Revoke and rotate the affected credential immediately, assess exposure and connected systems, and use private disclosure. Deleting a file in a new commit does not remove the prior secret from history. History rewrites need coordination with all collaborators and cannot replace credential rotation. No scanner guarantees detection of every secret.
 

@@ -81,6 +81,15 @@ class WorkflowSecurityTests(unittest.TestCase):
             self.assertIn(event, workflow)
         self.assertNotIn("secrets.GITLEAKS_LICENSE", workflow)
         self.assertNotIn("security-events: write", workflow)
+        self.assertIn(
+            "79a3ab579b53f71efd634f3aaf7e04a0fa0cf206b7ed434638d1547a2470a66e",
+            workflow,
+        )
+        self.assertIn("sha256sum --check --status", workflow)
+        self.assertIn('--log-opts="--all --full-history"', workflow)
+        self.assertIn("--redact --no-banner", workflow)
+        self.assertIn("exit_code=$?", workflow)
+        self.assertIn("Potential secret in Git history", workflow)
 
     def test_no_privileged_pr_trigger(self):
         for path in self.workflows:
