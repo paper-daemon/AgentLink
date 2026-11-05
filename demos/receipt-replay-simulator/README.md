@@ -1,5 +1,12 @@
 # Receipt Replay Simulator
 
+[![Watch the AgentLink receipt-recovery demo video](https://paper-daemon.github.io/agentlink-continuity/videos/receipt-recovery.jpg)](https://paper-daemon.github.io/agentlink-continuity/gallery.html#receipt-recovery)
+
+> 🎬 **[Watch the 22-second Receipt recovery demo](https://paper-daemon.github.io/agentlink-continuity/gallery.html#receipt-recovery)** · [Direct MP4](https://paper-daemon.github.io/agentlink-continuity/videos/receipt-recovery.mp4) · [All 7 demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)
+>
+> The clip visualizes actual public CLI output from a pinned source revision; it does not depict the private production AgentLink runtime.
+
+
 A tiny, standalone demonstration of two AgentLink reliability ideas:
 
 > before retrying an interrupted external action, check durable receipt state so already-completed work is not repeated blindly.

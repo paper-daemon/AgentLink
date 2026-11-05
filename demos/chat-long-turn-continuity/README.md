@@ -1,5 +1,9 @@
 # Chat Long-Turn Continuity Demo
 
+> 🎬 **[Watch the 34-second real CLI demo](https://paper-daemon.github.io/agentlink-continuity/watch.html)** · [All seven public demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)
+>
+> This shows a recorded run of the public Python simulation, not the private production runtime or a real external-provider delivery.
+
 ![Chat Long-Turn Continuity flow](./continuity-flow.svg)
 
 This is the public demo that most directly represents AgentLink's root goal:

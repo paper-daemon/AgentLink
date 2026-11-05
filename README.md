@@ -2,6 +2,10 @@
 
 ![AgentLink hero](./assets/agentlink-hero.svg)
 
+**🎬 [WATCH: All 7 runnable public demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)** · [34-sec real continuity screen capture](https://paper-daemon.github.io/agentlink-continuity/watch.html)
+
+See the working examples before reading the code. Six clips visualize captured public CLI/test output; the flagship film is a recorded interruption-and-recovery demonstration. None of them demonstrate the private production runtime.
+
 [![Full Python suite](https://github.com/paper-daemon/AgentLink/actions/workflows/full-python-suite.yml/badge.svg)](https://github.com/paper-daemon/AgentLink/actions/workflows/full-python-suite.yml)
 [![Chat long-turn continuity demo](https://github.com/paper-daemon/AgentLink/actions/workflows/chat-long-turn-continuity.yml/badge.svg)](https://github.com/paper-daemon/AgentLink/actions/workflows/chat-long-turn-continuity.yml)
 
