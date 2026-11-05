@@ -22,6 +22,16 @@
 
 These controls were tested against public demo fixtures. They do **not** imply that the system is safe against arbitrary same-account code execution.
 
+## Follow-up hardening (2026-11-05)
+
+- **Unexpected or incomplete SQLite schemas:** re-opening an existing database now validates its four known tables and columns, rejects unsupported schema versions, and does not silently recreate missing tables. Compatible legacy schema version 0 is checked before being marked version 1.
+- **Corrupted persisted execution state:** before claiming or advancing a job, the engine verifies step ordering, allowed statuses, local/effect distinctions, receipt consistency and job completion. An unknown status never falls through to execution permission.
+- **Multi-process contention:** five separately launched Python processes race for the same live job lease. The regression requires exactly one winner.
+- **Path hardening:** reject hardlinked databases, symlinked parents, and directories owned by another user or writable by group/others. Recheck path metadata before every new connection.
+- **Log-safety hardening:** reject bidirectional format characters and invisible Unicode control text in identifiers and evidence references.
+
+These checks reduce accidental corruption and common filesystem abuse. They are not proof against a hostile process with the same account privileges, hostile code already executing inside the program, or a provider with ambiguous remote operation outcomes.
+
 ## Critical residual risks
 
 - **No worker authentication:** a process with access to the SQLite database can still claim work or forge local evidence. Never expose this library as an unauthenticated remote service.
