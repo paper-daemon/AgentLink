@@ -1,5 +1,7 @@
 # Reliable API Job Orchestrator Demo
 
+[![Watch the AgentLink api-job-orchestrator demo video](https://paper-daemon.github.io/agentlink-continuity/videos/api-job-orchestrator.jpg)](https://paper-daemon.github.io/agentlink-continuity/gallery.html#api-job-orchestrator)
+
 > 🎬 **[Watch the 22-second API job orchestration demo](https://paper-daemon.github.io/agentlink-continuity/gallery.html#api-job-orchestrator)** · [Direct MP4](https://paper-daemon.github.io/agentlink-continuity/videos/api-job-orchestrator.mp4) · [All 7 demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)
 >
 > The clip visualizes actual public CLI/test output from a pinned source revision. This is a simulation or regression test, not a production integration.
