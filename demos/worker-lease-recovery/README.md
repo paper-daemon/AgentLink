@@ -1,5 +1,7 @@
 # Worker Lease Recovery Simulator
 
+[![Watch the AgentLink worker-handoff demo video](https://paper-daemon.github.io/agentlink-continuity/videos/worker-handoff.jpg)](https://paper-daemon.github.io/agentlink-continuity/gallery.html#worker-handoff)
+
 > 🎬 **[Watch the 22-second Worker handoff demo](https://paper-daemon.github.io/agentlink-continuity/gallery.html#worker-handoff)** · [Direct MP4](https://paper-daemon.github.io/agentlink-continuity/videos/worker-handoff.mp4) · [All 7 demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)
 >
 > The clip visualizes actual public CLI/test output from a pinned source revision. This is a simulation or regression test, not a production integration.
