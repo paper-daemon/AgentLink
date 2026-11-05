@@ -53,6 +53,10 @@ python3 continuity_demo.py status "$STATE"
 
 Each command is a separate process. The JSON file is the durable truth that lets the next continuation resume.
 
+**Checkpoint safety:** the original JSON simulator now writes via fsynced, same-directory atomic file replacement, and `init` refuses to overwrite a job that already exists. On POSIX it requires an owner-controlled directory that is not group/world writable, and uses owner-only (0600) checkpoint files. It rejects symlinks and malformed/oversized state before continuing. Use `mktemp -d`, not a bare shared `/tmp/job.json` file.
+
+This JSON demonstration is still **single-writer only**: atomic saves prevent truncated files, but do not serialize concurrent state transitions. For multiple competing workers use the separately packaged [SQLite engine](./PUBLIC_ENGINE.md), which has transactional lease claims.
+
 ## Importable SQLite continuity engine
 
 The public demo also contains a **small, installable MIT-licensed Python package** for developers who want to exercise durable job state, worker lease fencing, and conservative external-effect reconciliation in their own code.
