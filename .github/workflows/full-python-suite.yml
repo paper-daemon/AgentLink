@@ -5,6 +5,7 @@ on:
     paths:
       - '**/*.py'
       - '.github/workflows/full-python-suite.yml'
+      - '.github/workflows/**'
   pull_request:
     paths:
       - '**/*.py'
