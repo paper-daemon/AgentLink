@@ -52,6 +52,17 @@ A passing scanner is evidence that its current rules did not flag a leak **in th
 
 If anything is flagged, respond privately, revoke/rotate the credential, audit potential use, then decide whether history rewrite is appropriate. **Never put the discovered value in public logs, issues, or summaries.**
 
+## Proof-bound worker leases (2026-11-05)
+
+An earlier demo used only a worker name and numeric lease epoch to authorize actions. Since those values are observable in read-only snapshots, a malicious API client could fabricate a `Lease` if an application mistakenly exposed these low-level methods to untrusted callers.
+
+- Active leases now require a random 256-bit bearer proof. Only a SHA-256 hash is stored in SQLite; comparisons use `hmac.compare_digest`. Logging the standard dataclass representation does not reveal the proof.
+- `claim()` cannot preempt an active lease even if the caller supplies the existing worker name. New `renew()` and `release()` operations require the proof.
+- Version 0/1 SQLite stores migrate to version 2 only after structural and integrity checks. Every legacy lease is invalidated and any pending external effect remains `uncertain`, so migration does not permit automatic replay.
+- Tests cover spoofed owner/epoch, leaked snapshot identifiers, invalid proof, expired lease, same-name takeover, renewal/release and backward-compatible on-disk migration.
+
+**Not an identity boundary:** a bearer proof must remain secret. It is not equivalent to user authentication, hardware-backed authorization or a remote-worker access control service. Code running as the DB owner can still modify local state. A token stolen from trusted process memory is usable during its lease lifetime.
+
 ## Critical residual risks
 
 - **No worker authentication:** a process with access to the SQLite database can still claim work or forge local evidence. Never expose this library as an unauthenticated remote service.
