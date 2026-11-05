@@ -1,5 +1,9 @@
 # Idempotent Side-Effect Guard
 
+[![Idempotent Side-Effect Guard video preview](https://paper-daemon.github.io/agentlink-continuity/tool-videos/side-effect-guard.jpg)](https://paper-daemon.github.io/agentlink-continuity/tools.html#side-effect-guard)
+
+> 🎬 [22-second crash-boundary test video](https://paper-daemon.github.io/agentlink-continuity/tools.html#side-effect-guard) · [Direct MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/side-effect-guard.mp4). The video depicts public regression tests, not a real provider API.
+
 A tiny Python pattern for reducing duplicate external side effects such as sending the same email twice, posting the same notification twice, or repeating a publish action after a retry.
 
 The safe flow is:

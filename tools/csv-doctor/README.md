@@ -1,5 +1,9 @@
 # CSV Doctor
 
+[![CSV Doctor video preview](https://paper-daemon.github.io/agentlink-continuity/tool-videos/csv-quality.jpg)](https://paper-daemon.github.io/agentlink-continuity/tools.html#csv-quality)
+
+> 🎬 [22-second test-log video](https://paper-daemon.github.io/agentlink-continuity/tools.html#csv-quality) · [Direct MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/csv-quality.mp4). This is a test demonstration, not client data or a production import.
+
 A zero-dependency, report-first CLI for spotting common CSV/TSV data-quality problems before they become spreadsheet or import bugs.
 
 ## What it checks
