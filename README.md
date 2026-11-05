@@ -70,6 +70,7 @@ The goal is not to replace foundation models or chat products. The goal is to ma
 
 ## Public proof surfaces
 
+- **[Installable Continuity Engine](./demos/chat-long-turn-continuity/PUBLIC_ENGINE.md)** — MIT-licensed Python/SQLite starter library for persistent, explicitly driven jobs and conservative external-effect reconciliation
 - **[Chat Long-Turn Continuity Demo](./demos/chat-long-turn-continuity/)** — flagship MIT demo for durable continuation across fresh physical turns/processes
 - **[Receipt Replay Simulator](./demos/receipt-replay-simulator/)** — MIT reliability primitive for conservative recovery after interrupted side effects
 - **[Receipt Replay Simulator v0.1.0](https://github.com/paper-daemon/AgentLink/releases/tag/receipt-replay-simulator-v0.1.0)** — first scoped public release

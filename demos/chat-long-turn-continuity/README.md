@@ -53,6 +53,17 @@ python3 continuity_demo.py status "$STATE"
 
 Each command is a separate process. The JSON file is the durable truth that lets the next continuation resume.
 
+## Importable SQLite continuity engine
+
+The public demo also contains a **small, installable MIT-licensed Python package** for developers who want to exercise durable job state, worker lease fencing, and conservative external-effect reconciliation in their own code.
+
+```bash
+python3 -m pip install -e .
+python3 examples/hello_engine.py
+```
+
+Read the [public engine guide](./PUBLIC_ENGINE.md) for the API and explicit limitations. Its SQLite storage is separate from the earlier JSON simulator and **does not** guarantee exactly-once delivery of real external actions.
+
 ## Read-only checkpoint inspector
 
 After a turn is interrupted, inspect the saved JSON without changing it:
