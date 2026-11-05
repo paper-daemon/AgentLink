@@ -68,6 +68,12 @@ python3 examples/hello_engine.py
 
 Read the [public engine guide](./PUBLIC_ENGINE.md) for the API and explicit limitations. Its SQLite storage is separate from the earlier JSON simulator and **does not** guarantee exactly-once delivery of real external actions.
 
+## Provider read-back demonstration
+
+The package includes an [optional provider reconciliation API](./PUBLIC_ENGINE.md#optional-trusted-provider-read-back). A provider adapter can query a trusted external service to confirm that a previously interrupted operation really completed, then finalize the local step without replay. Unknown, absent, or timed-out status responses **never trigger automatic retries**.
+
+The `test_provider_readback.py` suite uses a separate synthetic ledger, not a real service or any private infrastructure.
+
 ## Security review
 
 The public engine now includes [security guidance and a threat model](./SECURITY_REVIEW.md), owner-only POSIX SQLite file creation, explicit rejection of unsafe existing DB paths, bounded identifiers and an adversarial test suite. This does **not** make the public demo or private AgentLink production runtime security certified.

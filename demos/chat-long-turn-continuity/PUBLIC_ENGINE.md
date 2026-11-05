@@ -63,6 +63,30 @@ The demo validates its SQLite schema at opening time. Unknown schema versions, i
 
 On POSIX the containing directory must be owned by the current user, must not be group/world writable, and must not be a symlink at the immediate parent level. The database file must not have extra hard links. These checks are repeated before opening a new connection. They do not eliminate races caused by a hostile process running with the same account's permissions.
 
+## Optional trusted provider read-back
+
+The library now exposes an explicit, **opt-in** reconciliation path. A caller may supply a trusted adapter implementing `ProviderReadback.read_status(job_id, receipt_key)`. It must query the **external provider's authoritative operation ledger**, not the AgentLink SQLite database.
+
+```python
+from agentlink_continuity import reconcile_remote, ProviderObservation
+
+class MyProvider:
+    def read_status(self, job_id: str, receipt_key: str) -> ProviderObservation:
+        # Implement by querying your actual provider's authoritative status.
+        # Never infer success from the local receipt or from a network timeout.
+        raise NotImplementedError
+
+# When next_action(lease) returns "reconcile":
+# result = reconcile_remote(engine, lease, "send", MyProvider())
+# Only result.outcome == "confirmed" marks the job step complete.
+```
+
+The adapter must return a `ProviderObservation` for the exact job ID and receipt key. A positive `confirmed` observation also requires an external, non-secret evidence reference. An `absent` or `unknown` observation, or a failed status call, leaves the step **uncertain** and never automatically retries. Even `absent` can mean an operation is still in flight or not visible due to eventual consistency.
+
+The provider query runs **outside** the SQLite write transaction. The lease and pending effect are rechecked afterwards, so a late reply cannot let a stale worker finalize the job. The sample test suite uses an independent SQLite ledger to simulate a remote system, but **does not call a real API**.
+
+**Trust limitation:** `ProviderReadback` is application-supplied code. This package cannot authenticate a provider, verify a digital signature, or prove an adapter is truthful. The older low-level `confirm_effect(..., external_evidence_ref=...)` is still available to trusted callers. Never expose these methods to untrusted clients without a separately designed authorization boundary.
+
 ## Critical crash window and safety contract
 
 A **reservation is written before** the caller attempts an external effect. After an interruption, that step is `uncertain`, and a later call returns `reconcile`. This covers both possible crash windows: the request might not have been sent, or it might have succeeded remotely before local confirmation.
