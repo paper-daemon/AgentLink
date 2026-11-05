@@ -53,6 +53,7 @@ The earlier simple JSON demo previously overwrote state directly and allowed `in
 - **Clock behavior:** lease expiry uses wall-clock time. Large clock jumps can change ownership timing. Use a stable, trusted host clock; do not share a single SQLite DB over unreliable network filesystems.
 - **Windows ACLs:** POSIX mode checks do not apply on Windows. Provision an ACL-limited private user directory before creating the database there.
 - **Evidence privacy:** database records and snapshots are not encrypted. Store opaque, nonsecret references, not tokens, customer data, or complete API response bodies.
+- **Static scanning:** a pinned CodeQL workflow now runs extended security queries for Python and JavaScript/TypeScript on pull requests, main pushes, and weekly. Only its SARIF upload receives `security-events: write`, while other workflows retain read-only permissions. This does not replace independent triage, secret scanning, or manual code review.
 - **Supply-chain review remains necessary:** hashed dependency lockfiles, dedicated secret scanning, CodeQL, independent reviews, controlled packaging/release signing and stronger permission boundaries remain future work.
 
 ## Upgrading an old public-demo database
