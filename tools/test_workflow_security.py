@@ -27,6 +27,12 @@ class WorkflowSecurityTests(unittest.TestCase):
             with self.subTest(workflow=path.name):
                 text = path.read_text(encoding="utf-8")
                 self.assertRegex(text, r"(?m)^permissions:\n  contents: read(?:\n|$)")
+                if path.name == "codeql-analysis.yml":
+                    # Only CodeQL's SARIF upload is allowed write scope.
+                    self.assertRegex(text, r"(?m)^  security-events: write$")
+                    without_sarif = text.replace("  security-events: write\n", "")
+                    self.assertNotRegex(without_sarif, r"(?m)^[ \t]+[a-z-]+: (?:write|write-all)\s*$")
+                else:
                 self.assertNotRegex(text, r"(?m)^[ \t]+[a-z-]+: (?:write|write-all)\s*$")
                 self.assertNotRegex(text, r"(?m)^[ \t]*permissions:\s*write-all")
 
@@ -38,7 +44,7 @@ class WorkflowSecurityTests(unittest.TestCase):
                 for action in actions:
                     if action.startswith("./"):
                         continue
-                    self.assertRegex(action, r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$")
+                    self.assertRegex(action, r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)?@[0-9a-f]{40}$")
                 checkouts = sum(a.startswith("actions/checkout@") for a in actions)
                 self.assertEqual(
                     len(CHECKOUT.findall(text)), checkouts,
