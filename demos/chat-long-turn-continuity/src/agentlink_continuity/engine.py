@@ -7,10 +7,13 @@ reconciled with the external system before any retry.
 from __future__ import annotations
 
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+import hashlib
+import hmac
 import math
 import os
+import secrets
 import sqlite3
 import stat
 import time
@@ -58,6 +61,7 @@ class Lease:
     job_id: str
     worker: str
     epoch: int
+    proof: str = field(repr=False)  # bearer capability; never log or serialize
 
 
 @dataclass(frozen=True)
@@ -93,16 +97,19 @@ class SQLiteContinuity:
                     "unexpected or incomplete database schema; refusing automatic repair"
                 )
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1):
+            if version not in (0, 1, 2):
                 raise ContinuityError("unsupported database schema version")
             if not found:
+                if version != 0:
+                    raise ContinuityError("missing tables in a versioned database")
                 db.executescript("""
                 CREATE TABLE IF NOT EXISTS jobs (
                     id TEXT PRIMARY KEY,
                     status TEXT NOT NULL DEFAULT 'running',
                     owner TEXT,
                     epoch INTEGER NOT NULL DEFAULT 0,
-                    lease_until REAL NOT NULL DEFAULT 0
+                    lease_until REAL NOT NULL DEFAULT 0,
+                    proof_hash TEXT
                 );
                 CREATE TABLE IF NOT EXISTS steps (
                     job_id TEXT NOT NULL REFERENCES jobs(id),
@@ -129,7 +136,8 @@ class SQLiteContinuity:
                 );
             """)
             expected_columns = {
-                "jobs": ["id", "status", "owner", "epoch", "lease_until"],
+                "jobs": ["id", "status", "owner", "epoch", "lease_until"]
+                + (["proof_hash"] if not found or version == 2 else []),
                 "steps": ["job_id", "position", "name", "effect", "receipt_key", "status"],
                 "receipts": ["job_id", "receipt_key", "evidence_ref"],
                 "events": ["id", "job_id", "kind", "detail"],
@@ -142,9 +150,22 @@ class SQLiteContinuity:
                 raise ContinuityError("SQLite integrity check failed")
             if db.execute("PRAGMA foreign_key_check").fetchone():
                 raise ContinuityError("SQLite foreign key integrity check failed")
-            # Upgrade legacy version-zero demo DB only after validating its structure.
-            if version == 0:
-                db.execute("PRAGMA user_version=1")
+            if not found:
+                db.execute("PRAGMA user_version=2")
+            elif version in (0, 1):
+                # Fence pre-proof leases without replaying uncertain effects.
+                db.execute("BEGIN IMMEDIATE")
+                try:
+                    db.execute("ALTER TABLE jobs ADD COLUMN proof_hash TEXT")
+                    db.execute(
+                        "UPDATE jobs SET owner=NULL, lease_until=0, epoch=epoch+1 "
+                        "WHERE owner IS NOT NULL"
+                    )
+                    db.execute("PRAGMA user_version=2")
+                    db.commit()
+                except BaseException:
+                    db.rollback()
+                    raise
 
     def _prepare_private_database(self) -> None:
         """On POSIX, create a private file and refuse unsafe existing files.
@@ -265,6 +286,17 @@ class SQLiteContinuity:
                 or not isinstance(job["lease_until"], (int, float))
                 or not math.isfinite(job["lease_until"])):
             raise ContinuityError("invalid job lease metadata")
+        proof_hash = job["proof_hash"]
+        if proof_hash is not None and (
+            not isinstance(proof_hash, str)
+            or len(proof_hash) != 64
+            or any(c not in "0123456789abcdef" for c in proof_hash)
+        ):
+            raise ContinuityError("invalid lease proof metadata")
+        if (job["owner"] is None) != (proof_hash is None):
+            raise ContinuityError("lease owner and proof are inconsistent")
+        if job["owner"] is None and job["lease_until"] != 0:
+            raise ContinuityError("unowned job has nonzero lease deadline")
         steps = db.execute(
             "SELECT * FROM steps WHERE job_id=? ORDER BY position", (job_id,)
         ).fetchall()
@@ -322,23 +354,64 @@ class SQLiteContinuity:
             if row["status"] == "completed":
                 raise ContinuityError("job already completed")
             now = self._now()
-            if row["owner"] not in (None, worker) and row["lease_until"] > now:
-                raise LeaseBusy("another worker currently holds this job")
+            if row["owner"] is not None and row["lease_until"] > now:
+                # A worker label is not an identity credential.
+                raise LeaseBusy("job already has an active lease")
             epoch = row["epoch"] + 1
+            proof = secrets.token_urlsafe(32)
+            proof_hash = hashlib.sha256(proof.encode("utf-8")).hexdigest()
             db.execute(
-                "UPDATE jobs SET owner=?, epoch=?, lease_until=? WHERE id=?",
-                (worker, epoch, now + lease_seconds, job_id),
+                "UPDATE jobs SET owner=?, epoch=?, lease_until=?, proof_hash=? WHERE id=?",
+                (worker, epoch, now + lease_seconds, proof_hash, job_id),
             )
             self._event(db, job_id, "claimed", f"{worker}@{epoch}")
-            return Lease(job_id, worker, epoch)
+            return Lease(job_id, worker, epoch, proof)
 
     def _check_lease(self, db: sqlite3.Connection, lease: Lease) -> None:
+        if not isinstance(lease, Lease) or not isinstance(lease.proof, str):
+            raise StaleLease("a valid lease proof is required")
         self._validate_job(db, lease.job_id)
-        row = db.execute("SELECT owner, epoch, lease_until FROM jobs WHERE id=?", (lease.job_id,)).fetchone()
+        row = db.execute(
+            "SELECT owner, epoch, lease_until, proof_hash FROM jobs WHERE id=?",
+            (lease.job_id,),
+        ).fetchone()
         if row is None or (row["owner"], row["epoch"]) != (lease.worker, lease.epoch):
             raise StaleLease("worker is not the current lease holder")
+        expected = row["proof_hash"]
+        actual = hashlib.sha256(lease.proof.encode("utf-8")).hexdigest()
+        if not expected or not hmac.compare_digest(expected, actual):
+            raise StaleLease("lease proof does not match current owner")
         if row["lease_until"] <= self._now():
             raise StaleLease("worker lease expired")
+
+    def renew(self, lease: Lease, *, lease_seconds: float = 60.0) -> None:
+        """Extend a live lease using proof, not a repeated worker label."""
+        if (
+            type(lease_seconds) not in (int, float)
+            or not math.isfinite(lease_seconds)
+            or not 0 < lease_seconds <= 86400
+        ):
+            raise ValueError("lease_seconds must be finite and between 0 and 86400")
+        with self._write() as db:
+            self._check_lease(db, lease)
+            row = db.execute("SELECT status FROM jobs WHERE id=?", (lease.job_id,)).fetchone()
+            if row["status"] == "completed":
+                raise ContinuityError("cannot renew a completed job")
+            db.execute(
+                "UPDATE jobs SET lease_until=? WHERE id=?",
+                (self._now() + lease_seconds, lease.job_id),
+            )
+            self._event(db, lease.job_id, "lease_renewed", str(lease.epoch))
+
+    def release(self, lease: Lease) -> None:
+        """Explicitly relinquish a lease; future claims get a new proof."""
+        with self._write() as db:
+            self._check_lease(db, lease)
+            db.execute(
+                "UPDATE jobs SET owner=NULL, lease_until=0, proof_hash=NULL WHERE id=?",
+                (lease.job_id,),
+            )
+            self._event(db, lease.job_id, "lease_released", str(lease.epoch))
 
     @staticmethod
     def _open_step(db: sqlite3.Connection, job_id: str) -> sqlite3.Row | None:

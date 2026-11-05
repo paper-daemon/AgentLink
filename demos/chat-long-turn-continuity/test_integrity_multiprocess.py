@@ -72,11 +72,12 @@ class IntegrityAndProcessTests(unittest.TestCase):
             SQLiteContinuity(self.path)
 
     def test_version_zero_compatible_legacy_db_is_recognized(self):
+        self.change_sql("ALTER TABLE jobs DROP COLUMN proof_hash")
         self.change_sql("PRAGMA user_version=0")
         reopened = SQLiteContinuity(self.path)
         self.assertEqual(reopened.snapshot("job")["status"], "running")
         with sqlite3.connect(self.path) as db:
-            self.assertEqual(db.execute("PRAGMA user_version").fetchone()[0], 1)
+            self.assertEqual(db.execute("PRAGMA user_version").fetchone()[0], 2)
 
     def test_partial_schema_is_not_silently_repaired(self):
         target = Path(self.tmp.name) / "partial.sqlite3"

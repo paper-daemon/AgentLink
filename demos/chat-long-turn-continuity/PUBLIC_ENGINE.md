@@ -45,7 +45,13 @@ if action.kind == "execute_once":
 # engine.confirm_effect(lease, "send", external_evidence_ref="verified-reference")
 ```
 
-The `Lease` embeds the worker and an increasing epoch. An expired or superseded lease cannot complete work. A second worker cannot preempt a live lease. SQLite `BEGIN IMMEDIATE` serializes concurrent state changes.
+The `Lease` embeds a worker, increasing epoch, and a **random proof token**. The database stores only SHA-256 of this token. Lease checks use constant-time digest comparison. The token is excluded from the object representation, but is still a sensitive bearer capability: never log, serialize, send to untrusted processes, or store it in plain text.
+
+Merely knowing a worker name or epoch, including values from `snapshot()`, cannot authorize a mutation. A worker **cannot reclaim its own active lease by repeating the same label**. To keep working, it must call `engine.renew(lease, lease_seconds=60)`; to relinquish explicitly, `engine.release(lease)`. Once a lease expires or is released, its proof is invalid and a new claimant receives a new token. SQLite `BEGIN IMMEDIATE` serializes concurrent state changes.
+
+**Migration to demo v0.2.0:** existing v0/v1 SQLite databases are structurally checked and migrated to schema version 2. Previously active leases are fenced (owner cleared and epoch advanced); steps and `uncertain` external effects remain intact and still require reconciliation. Back up trusted databases before upgrading. A v2 database falsely marked as an older schema is rejected. Older `Lease(job_id, worker, epoch)` instances cannot authorize writes against v0.2.0.
+
+**Trust boundary:** this token proves possession of a lease to the trusted local engine. It is **not cryptographic worker identity authentication** for an untrusted remote service. Anyone with permission to edit the SQLite database, execute trusted code, or call `claim()` after expiry remains inside the trust boundary; use separately authenticated and authorized transport for remote workers.
 
 `next_action()` returns `run_local`, `execute_once`, `reconcile`, or `completed`. It never performs a network request or arbitrary external side effect. `snapshot()` is read-only and returns local evidence with an event trail. The API intentionally has no background agent and no automatic looping across turns.
 
