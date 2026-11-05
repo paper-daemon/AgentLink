@@ -1,5 +1,25 @@
 # AgentLink Public Tools
 
+## Watch the public tools in action
+
+**🎬 [All 12 developer tool / example videos](https://paper-daemon.github.io/agentlink-continuity/tools.html)** · [All 7 core demo videos](https://paper-daemon.github.io/agentlink-continuity/gallery.html)
+
+The clips visualize **actual public unit-test output** captured from pinned source. They are annotated test-log videos, not production UI screen recordings or external-service validations.
+
+| Tool | Japanese walkthrough | Direct MP4 |
+| --- | --- | --- |
+| CSV Doctor | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#csv-quality) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/csv-quality.mp4) |
+| SRT Doctor | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#srt-subtitles) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/srt-subtitles.mp4) |
+| Retry Guard | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#retry-guard) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/retry-guard.mp4) |
+| Receipt Ledger | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#receipt-ledger) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/receipt-ledger.mp4) |
+| RAG Trace | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#rag-trace) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/rag-trace.mp4) |
+| Image Model Benchmark | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#image-model-benchmark) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/image-model-benchmark.mp4) |
+| Editorial Depth | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#editorial-depth) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/editorial-depth.mp4) |
+| Site Surface Doctor | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#site-surface) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/site-surface.mp4) |
+| URL Contract | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#url-contract) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/url-contract.mp4) |
+| User Bus Doctor | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#user-bus) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/user-bus.mp4) |
+| Video Redaction Filter | [▶ Watch 22s](https://paper-daemon.github.io/agentlink-continuity/tools.html#video-redaction) | [MP4](https://paper-daemon.github.io/agentlink-continuity/tool-videos/video-redaction.mp4) |
+
 Small, dependency-free utilities published as practical, testable building blocks. They are intentionally standalone and do not expose AgentLink's private production core.
 
 ## CSV Doctor
