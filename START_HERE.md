@@ -20,6 +20,8 @@ AgentLink explores a specific problem: **what happens to useful work when an AI 
 
 A clean clone and Python are enough for the original standalone demos. No API key and no production AgentLink service.
 
+### Unix-like (bash)
+
 ```bash
 git clone https://github.com/paper-daemon/AgentLink.git
 cd AgentLink/demos/chat-long-turn-continuity
@@ -27,9 +29,24 @@ python3 run_demo.py
 python3 -m unittest -v test_continuity_demo.py
 ```
 
+### Windows (PowerShell) — **unverified**
+
+These commands have not been verified on a real Windows environment. They are provided as a starting point for Windows contributors.
+
+```powershell
+git clone https://github.com/paper-daemon/AgentLink.git
+cd AgentLink\demos\chat-long-turn-continuity
+py -3 run_demo.py
+py -3 -m unittest -v test_continuity_demo.py
+```
+
+If `py` is not available, use `python` instead (ensure it is Python 3.10+).
+
 In the output, the job crosses separate Python processes, loses one turn after recording an effect receipt, and continues without running that simulated effect twice. This **does not** demonstrate exactly-once behavior for a real remote provider.
 
 ### Optional: use the importable SQLite engine
+
+**Unix-like:**
 
 ```bash
 # from demos/chat-long-turn-continuity/
@@ -37,6 +54,24 @@ python3 -m pip install -e .
 python3 examples/hello_engine.py
 python3 -m unittest -v test_public_engine.py test_lease_proof.py
 ```
+
+**Windows (PowerShell) — unverified:**
+
+```powershell
+# from demos\chat-long-turn-continuity\
+py -3 -m pip install -e .
+py -3 examples\hello_engine.py
+py -3 -m unittest -v test_public_engine.py test_lease_proof.py
+```
+
+To avoid installation, set the path explicitly:
+
+```powershell
+$env:PYTHONPATH = "src"
+py -3 examples\hello_engine.py
+```
+
+**Important on Windows:** POSIX mode `0600` permission checks do not enforce Windows ACLs. The SQLite database and any related files must be stored in a user-private directory that you control with ACLs. See [SECURITY_REVIEW.md](./demos/chat-long-turn-continuity/SECURITY_REVIEW.md) for the full trust and residual-risk notes. This documentation does **not** imply that the private AgentLink runtime or the SQLite demo's filesystem security has been certified for Windows.
 
 Read [PUBLIC_ENGINE.md](./demos/chat-long-turn-continuity/PUBLIC_ENGINE.md) for the explicit lease and external-effect safety contract. The installed package is a public demo, not the private runtime.
 
@@ -47,6 +82,15 @@ Read [PUBLIC_ENGINE.md](./demos/chat-long-turn-continuity/PUBLIC_ENGINE.md) for 
 cd demos/receipt-replay-simulator
 python3 demo.py
 python3 -m unittest -v
+```
+
+**Windows (PowerShell) — unverified:**
+
+```powershell
+# from the repository root
+cd demos\receipt-replay-simulator
+py -3 demo.py
+py -3 -m unittest -v
 ```
 
 This prints why `COMPLETED` must not replay, why `UNCERTAIN` requires checking the remote outcome, and why `NOT_STARTED` permits retry only when lack of dispatch is known.
