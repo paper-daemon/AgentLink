@@ -69,6 +69,10 @@ This mechanism is written up (in Japanese) as episode 2 of a series that opens u
 
 The production system adds lane routing, wake-up notifications, and richer supersede rules on top of the same skeleton: a box, a message file, and a receipt.
 
+## If it worked for you
+
+動いたら、ここからスターもらえると嬉しいです → [paper-daemon/AgentLink](https://github.com/paper-daemon/AgentLink)
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).

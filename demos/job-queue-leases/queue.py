@@ -302,7 +302,7 @@ def run_demo() -> None:
 
     print(f"final status: {q.status()}")
     print("events.jsonl has the full story - every transition, in order.")
-    print("\nIf this demo was useful, a star helps others find it: "
+    print("\n動いたら、ここからスターもらえると嬉しいです → "
           "https://github.com/paper-daemon/AgentLink")
 
 

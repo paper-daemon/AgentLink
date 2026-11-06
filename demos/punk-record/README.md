@@ -60,6 +60,10 @@ Standard library only; Python 3.10+.
 
 This mechanism is episode 1 of a series (in Japanese) that opens up AgentLink's internals one mechanism at a time, published by [あませ on note](https://note.com/lovely_hosta391). The production system adds people/group files, search, and background curation on top of the same skeleton: dated, sourced records, resolved into a brief the next session actually reads.
 
+## If it worked for you
+
+動いたら、ここからスターもらえると嬉しいです → [paper-daemon/AgentLink](https://github.com/paper-daemon/AgentLink)
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).

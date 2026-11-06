@@ -232,7 +232,7 @@ def run_demo() -> None:
     print("\nTakeaway: the send returned success for all four messages, but")
     print("only one was ever delivered in the sense that matters - it has a")
     print("receipt. The rest is sorted work, not a mystery.")
-    print("\nIf this demo was useful, a star helps others find it: "
+    print("\n動いたら、ここからスターもらえると嬉しいです → "
           "https://github.com/paper-daemon/AgentLink")
 
 

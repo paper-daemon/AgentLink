@@ -76,6 +76,10 @@ This mechanism is written up (in Japanese) as episode 4 of a series that opens u
 
 The production system adds lane priorities, periodic sweeps inside a supervisor, and verification passes on top of the same skeleton: staged files, a lease stamp, and a sweep that refuses to guess.
 
+## If it worked for you
+
+動いたら、ここからスターもらえると嬉しいです → [paper-daemon/AgentLink](https://github.com/paper-daemon/AgentLink)
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).

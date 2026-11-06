@@ -59,6 +59,10 @@ This mechanism is written up (in Japanese) as episode 5 of a series that opens u
 
 The production router adds lane identity, per-node connectors, and a keep-warm watcher on top of the same skeleton: one entrance, an operation registry, measured segments, and failover that never lies about where state lives.
 
+## If it worked for you
+
+動いたら、ここからスターもらえると嬉しいです → [paper-daemon/AgentLink](https://github.com/paper-daemon/AgentLink)
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).

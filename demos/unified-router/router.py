@@ -56,7 +56,7 @@ import tempfile
 import time
 from pathlib import Path
 
-STAR_HINT = ("If this demo was useful, a star helps others find it: "
+STAR_HINT = ("動いたら、ここからスターもらえると嬉しいです → "
              "https://github.com/paper-daemon/AgentLink")
 
 

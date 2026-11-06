@@ -75,6 +75,10 @@ This mechanism is written up (in Japanese) as episode 3 of a series that opens u
 
 The production system adds card UIs, per-category approvers, and expiry on top of the same skeleton: fixed stop classes, one exact operation per approval, and a ledger that remembers who let what through.
 
+## If it worked for you
+
+動いたら、ここからスターもらえると嬉しいです → [paper-daemon/AgentLink](https://github.com/paper-daemon/AgentLink)
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).

@@ -189,7 +189,7 @@ def run_demo() -> None:
     print("history is evidence, not clutter. And no session had to")
     print("'remember' anything: continuity lives in the records, each")
     print("with a date and a source a reader can weigh.")
-    print("\nIf this demo was useful, a star helps others find it: "
+    print("\n動いたら、ここからスターもらえると嬉しいです → "
           "https://github.com/paper-daemon/AgentLink")
 
 
