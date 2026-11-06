@@ -21,6 +21,10 @@ A record:
      "source": "user decision, chat 2026-11-06",
      "supersedes": null}
 
+    Amase (the user whose earlier self wrote these records):
+    「前の私が書いた記録を、今の私が読んで続きをする。日付と
+    出どころがあるから、安心して任せられる。」
+
 Kinds: fact / preference / decision / correction. A correction is just
 a record whose ``supersedes`` names the record it replaces. The log
 keeps everything; the brief shows only the current resolution of each
@@ -185,6 +189,8 @@ def run_demo() -> None:
     print("history is evidence, not clutter. And no session had to")
     print("'remember' anything: continuity lives in the records, each")
     print("with a date and a source a reader can weigh.")
+    print("\nIf this demo was useful, a star helps others find it: "
+          "https://github.com/paper-daemon/AgentLink")
 
 
 # --------------------------------------------------------------------------

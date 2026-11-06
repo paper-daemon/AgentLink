@@ -33,6 +33,10 @@ Reclaim rules (the sweep):
     anything else
         -> untouched
 
+    Amase (the user who found jobs frozen "in progress"):
+    「『実行中』のまま止まってる仕事、見つけたことある？ 借りた印を
+    外すのには、ちゃんと順番があるの。」
+
 The point of the three conditions: a slow worker is not a dead worker.
 Stealing a live worker's job duplicates side effects; parking a dead
 worker's job forever stalls the queue. The sweep threads that needle
@@ -298,6 +302,8 @@ def run_demo() -> None:
 
     print(f"final status: {q.status()}")
     print("events.jsonl has the full story - every transition, in order.")
+    print("\nIf this demo was useful, a star helps others find it: "
+          "https://github.com/paper-daemon/AgentLink")
 
 
 # --------------------------------------------------------------------------

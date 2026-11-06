@@ -1,5 +1,30 @@
 # Job Queue + Leases
 
+> 「『実行中』のまま止まってる仕事、見つけたことある？ 借りた印を外すのには、ちゃんと順番があるの。」
+> — あませ (the user who found jobs frozen "in progress")
+
+## Run it — this is what happens
+
+```bash
+python3 queue.py demo
+```
+
+```
+worker-a claimed the digest job, then went silent. worker-b finished its job.
+
+sweep #1 - a's death NOT yet confirmed (probe: unknown):
+  -> parked in review/, NOT silently recycled. A human decides.
+
+sweep #2 - lease expired, heartbeat stale, supervisor confirms death:
+  -> reclaimed; worker-d picks it up (attempt 3) and finishes it.
+
+final status: {'inbox': 0, 'leased': 0, 'done': 2, 'review': 0}
+```
+
+```bash
+python3 -m unittest test_queue -v   # 9 tests
+```
+
 A tiny, standalone demonstration of the leased job queue behind AgentLink's long-running work:
 
 > **A lease is a loan, not a lock. The queue may take a job back only when three things are all true at once: the lease expired, the worker's heartbeat went quiet, AND the worker is confirmed dead. Anything less certain goes to a human review pile — never silently back into circulation.**
@@ -32,14 +57,7 @@ Expired but not proven dead — owner alive, or liveness simply *unknown* — go
 - **Honest completion states**: a finished job is `worker_reported_unverified`, not gospel — reporting and verifying are different steps
 - An **append-only event log** (`events.jsonl`) recording every transition
 
-## Run it
-
-```bash
-python3 queue.py demo        # scripted story: two silent deaths, two kinds of sweep
-python3 -m unittest test_queue -v
-```
-
-Or drive a queue yourself:
+## Drive a queue yourself
 
 ```bash
 python3 queue.py enqueue  --queue ./q "Render the weekly digest"

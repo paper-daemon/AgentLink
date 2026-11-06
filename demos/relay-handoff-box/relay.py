@@ -17,6 +17,10 @@ Nothing is ever deleted, so the full state can be audited at any time:
         20261106T120000000000Z-a1b2c3.ack    <- Bob's receipt
         20261106T130000000000Z-d4e5f6.json   <- still unacked
 
+    Amase (the user who hands work through this box):
+    「入れただけじゃ、渡したことにならないんだよね。受け取った
+    記録が付いて、やっと届いたことになる。」
+
 ``triage`` sorts the unacked remainder into the three classes an
 operator actually acts on:
 
@@ -228,6 +232,8 @@ def run_demo() -> None:
     print("\nTakeaway: the send returned success for all four messages, but")
     print("only one was ever delivered in the sense that matters - it has a")
     print("receipt. The rest is sorted work, not a mystery.")
+    print("\nIf this demo was useful, a star helps others find it: "
+          "https://github.com/paper-daemon/AgentLink")
 
 
 # --------------------------------------------------------------------------

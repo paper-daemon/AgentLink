@@ -248,6 +248,8 @@ def run_demo() -> None:
     print("\nTakeaway: the gate's value is not the stop itself. It is that")
     print("everything NOT stopped is unambiguously free to run - and an")
     print("approval is a key cut for one exact lock, never a master key.")
+    print("\nIf this demo was useful, a star helps others find it: "
+          "https://github.com/paper-daemon/AgentLink")
 
 
 # --------------------------------------------------------------------------

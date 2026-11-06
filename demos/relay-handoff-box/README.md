@@ -1,5 +1,33 @@
 # Relay Handoff Box
 
+> 「入れただけじゃ、渡したことにならないんだよね。受け取った記録が付いて、やっと届いたことになる。」
+> — あませ (the user who hands work through this box)
+
+## Run it — this is what happens
+
+```bash
+python3 relay.py demo
+```
+
+```
+alice -> bob  note      …-bf24c5  (spec v1)
+alice -> bob  note      …-3756a5  (spec v2, supersedes v1)
+carol -> bob  question  …-827356
+alice -> bob  note      …-07cf72  (never picked up)
+
+triage of bob's inbox:
+  acked       …-3756a5  Spec v2 - v1 had the totals row wrong.
+  needs_reply …-827356  Can you review the draft by Friday?   STALE
+  pending     …-07cf72  FYI: the meeting moved to 15:00.
+  superseded  …-bf24c5  Spec v1 for the report layout is ready.
+```
+
+Four sends "succeeded" — exactly one was ever delivered. The rest is sorted work, not a mystery.
+
+```bash
+python3 -m unittest test_relay -v   # 8 tests
+```
+
 A tiny, standalone demonstration of the handoff mechanism behind AgentLink's agent-to-agent relay:
 
 > **Sent is not delivered. A handoff counts as delivered only when the receiver's ack receipt exists next to the message.**
@@ -22,14 +50,7 @@ The fix is boring and total: make delivery a **file the receiver writes**, not a
   - `superseded` — a later message explicitly replaces it (`supersedes` field): safe to close without action
 - **Stale flagging**: unacked items older than a threshold are marked, so a quiet box cannot silently rot
 
-## Run it
-
-```bash
-python3 relay.py demo        # scripted walk-through in a temp box
-python3 -m unittest test_relay -v
-```
-
-Or drive a box yourself:
+## Drive a box yourself
 
 ```bash
 python3 relay.py send   --box ./box --from alice --to bob --kind question "Can you review the draft?"

@@ -1,5 +1,27 @@
 # Punk Record
 
+> 「前の私が書いた記録を、今の私が読んで続きをする。日付と出どころがあるから、安心して任せられる。」
+> — あませ (the user whose earlier self wrote these records)
+
+## Run it — this is what happens
+
+```bash
+python3 punkrecord.py demo
+```
+
+Three "sessions" share one store. Session 1 records three dated, sourced entries. Session 2 — a fresh process that remembers nothing — reads the generated brief and continues. Then a correction arrives:
+
+```
+correction recorded as rec-…, superseding rec-…
+explain(rec-…): status=superseded, replaced_by=rec-…
+```
+
+Session 3's brief shows the corrected claim; the old one remains in the append-only log. Continuity lives in the records, not in any session's head.
+
+```bash
+python3 -m unittest test_punkrecord -v   # 7 tests
+```
+
 A tiny, standalone demonstration of the shared-memory record format behind AgentLink — the mechanism the note series calls the **Punk Record**:
 
 > **A memory you cannot date or source is a rumor. Every record carries WHEN it was learned and WHERE it came from; corrections replace by pointing at what they replace, never by erasing history.**
@@ -23,14 +45,7 @@ The alternative is to make continuity a property of **records**, not of sessions
 - **Corrections as records** — replacing a claim without erasing it, and an `explain` view that walks the chain: what a record replaced, and what replaced it
 - **Continuity without amnesia or confabulation**: no session in the demo "remembers" anything in-process; session 3 knows session 1's decisions purely because the records say so, with provenance attached
 
-## Run it
-
-```bash
-python3 punkrecord.py demo     # three sessions, one store, one correction
-python3 -m unittest test_punkrecord -v
-```
-
-Or drive a store yourself:
+## Drive a store yourself
 
 ```bash
 python3 punkrecord.py add     --store ./s --kind decision --source "user, chat" "Demos live in demos/."
