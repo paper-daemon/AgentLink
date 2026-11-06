@@ -85,6 +85,7 @@ The goal is not to replace foundation models or chat products. The goal is to ma
 - **[Receipt Replay Simulator](./demos/receipt-replay-simulator/)** — MIT reliability primitive for conservative recovery after interrupted side effects
 - **[Receipt Replay Simulator v0.1.0](https://github.com/paper-daemon/AgentLink/releases/tag/receipt-replay-simulator-v0.1.0)** — first scoped public release
 - **[Worker Lease Recovery](./demos/worker-lease-recovery/)** — small handoff/recovery proof
+- **[Relay Handoff Box](./demos/relay-handoff-box/)** — durable handoff box with ack receipts and unacked triage (pending / needs-reply / superseded)
 - **[RAG Fleet Harness case study](./CASE_STUDY_RAG_FLEET.md)** — isolated agent routing, validation, health and test evidence
 - **[Architecture notes](./ARCHITECTURE.md)** — execution-layer design and boundaries
 - **[Technical proofs](./TECHNICAL_PROOFS.md)** — evidence for selected implementation claims
