@@ -58,7 +58,11 @@ Standard library only; Python 3.10+.
 
 ## The story behind it
 
-This mechanism is episode 1 of a series (in Japanese) that opens up AgentLink's internals one mechanism at a time, published by [あませ on note](https://note.com/lovely_hosta391). The production system adds people/group files, search, and background curation on top of the same skeleton: dated, sourced records, resolved into a brief the next session actually reads.
+This mechanism is written up (in Japanese) as episode 1 of a series that opens up AgentLink's internals one mechanism at a time:
+
+- [別の窓から起きた知能は昨日の事を知らない](https://note.com/lovely_hosta391/n/n0dddccbca6f8) — "The intelligence that woke in another window does not know yesterday"
+
+The production system adds people/group files, search, and background curation on top of the same skeleton: dated, sourced records, resolved into a brief the next session actually reads.
 
 ## If it worked for you
 
